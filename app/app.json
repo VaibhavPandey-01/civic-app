@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "CivicSafe",
+    "slug": "ocean-preventions",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAFAFA"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app requires access to the camera to capture real-time environmental incidents.",
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location to route the environmental reports correctly.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app requires access to your location to geotag reports correctly."
+      }
+    },
+    "android": {
+      "package": "com.oceanpreventions.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FAFAFA"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "11c2906f-9e10-4802-a1ad-05733c12a807"
+      }
+    },
+    "owner": "vaibhav_pandey_1"
+  }
+}
