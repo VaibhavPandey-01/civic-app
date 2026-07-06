@@ -282,6 +282,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: Colors.spacing.md,
-    paddingBottom: Colors.spacing.xl,
+    paddingBottom: 100,
   },
 });

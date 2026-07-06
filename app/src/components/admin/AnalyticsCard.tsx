@@ -23,11 +23,11 @@ export const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
   const IconComponent = (LucideIcons as any)[iconName] || LucideIcons.BarChart2;
 
   return (
-    <View style={[styles.card, { backgroundColor: bgColor }]}>
+    <View style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.count}>{count}</Text>
-        <View style={styles.iconCircle}>
-          <IconComponent size={20} color={iconColor} />
+        <View style={[styles.iconCircle, { backgroundColor: bgColor === '#FFFBEB' ? '#FEF3C7' : '#D1D9E6' }]}>
+          <IconComponent size={18} color={iconColor} />
         </View>
       </View>
       <Text style={styles.label}>{label}</Text>
@@ -38,12 +38,19 @@ export const AnalyticsCard: React.FC<AnalyticsCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: Colors.radius.md,
+    borderRadius: 16,
     padding: Colors.spacing.md,
     marginHorizontal: Colors.spacing.xs,
     justifyContent: 'space-between',
     minHeight: 90,
-    ...Colors.shadow.soft,
+    backgroundColor: '#E0E5EC',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 4,
   },
   header: {
     flexDirection: 'row',
@@ -60,13 +67,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Colors.shadow.soft,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.grayText,
     textTransform: 'uppercase',

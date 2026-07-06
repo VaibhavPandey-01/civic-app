@@ -19,42 +19,42 @@ export const CATEGORIES: CategoryItem[] = [
     id: 'garbage_dump',
     label: 'Garbage Dump',
     iconName: 'Trash2',
-    color: '#2E9E5B', // environmental green
+    color: '#10B981',
     group: 'environmental',
   },
   {
     id: 'plastic_pollution',
     label: 'Plastic Pollution',
     iconName: 'Package',
-    color: '#2E9E5B',
+    color: '#06B6D4',
     group: 'environmental',
   },
   {
     id: 'waste_accumulation',
     label: 'Waste Accumulation',
     iconName: 'Layers',
-    color: '#2E9E5B',
+    color: '#8B5CF6',
     group: 'environmental',
   },
   {
     id: 'water_pollution',
     label: 'Water Pollution',
     iconName: 'Droplet',
-    color: '#1E63D6', // primary blue
+    color: '#3B82F6',
     group: 'environmental',
   },
   {
     id: 'suspicious_object',
     label: 'Suspicious Object',
     iconName: 'AlertTriangle',
-    color: '#FF6B35', // alert orange
+    color: '#F59E0B',
     group: 'safety',
   },
   {
     id: 'emergency_situation',
     label: 'Emergency Situation',
     iconName: 'ShieldAlert',
-    color: '#FF6B35',
+    color: '#EF4444',
     group: 'safety',
   },
 ];

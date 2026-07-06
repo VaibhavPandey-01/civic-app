@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { LayoutDashboard, Map, FileSpreadsheet, BarChart2 } from 'lucide-react-native';
 import { AdminTabParamList, ReportsStackParamList } from '../types/navigation.types';
 import { AdminDashboardScreen } from '../screens/admin/dashboard/AdminDashboardScreen';
@@ -11,6 +11,7 @@ import { AdminReportDetailScreen } from '../screens/admin/reports/AdminReportDet
 import { UploadResolutionScreen } from '../screens/admin/resolution/UploadResolutionScreen';
 import { AnalyticsScreen } from '../screens/admin/analytics/AnalyticsScreen';
 import { Colors } from '../constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 const ReportsStack = createNativeStackNavigator<ReportsStackParamList>();
@@ -39,13 +40,33 @@ export const AdminNavigator = () => {
         tabBarActiveTintColor: Colors.primaryBlue,
         tabBarInactiveTintColor: Colors.grayText,
         tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopWidth: 1,
-          borderTopColor: '#EEEEEE',
-          height: Platform.OS === 'ios' ? 88 : 60,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          position: 'absolute',
+          bottom: Platform.OS === 'ios' ? 24 : 16,
+          left: 16,
+          right: 16,
+          backgroundColor: 'transparent',
+          borderRadius: 24,
+          height: 64,
+          paddingBottom: 8,
           paddingTop: 8,
+          borderWidth: 1,
+          borderColor: 'rgba(229, 231, 235, 0.5)',
+          borderTopWidth: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.08,
+          shadowRadius: 16,
+          elevation: 8,
+          overflow: 'hidden',
         },
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.98)', 'rgba(245, 247, 250, 0.92)']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+        ),
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
