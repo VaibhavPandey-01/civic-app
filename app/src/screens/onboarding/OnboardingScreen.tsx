@@ -10,6 +10,7 @@ import {
   StatusBar,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Modal,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Camera, Navigation, Activity, LucideIcon } from 'lucide-react-native';
@@ -18,6 +19,7 @@ import { AuthStackParamList } from '../../types/navigation.types';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useSettingsStore } from '../../context/useSettingsStore';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
@@ -60,8 +62,15 @@ const SLIDES: Slide[] = [
 
 export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
+  const { setLanguage, language } = useSettingsStore();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [langModalVisible, setLangModalVisible] = useState(true);
   const scrollRef = useRef<ScrollView>(null);
+
+  const selectLanguage = (lang: 'en' | 'hi') => {
+    setLanguage(lang);
+    setLangModalVisible(false);
+  };
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -70,8 +79,10 @@ export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
 
   const goToNext = () => {
     if (currentIndex < SLIDES.length - 1) {
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
       scrollRef.current?.scrollTo({
-        x: (currentIndex + 1) * SCREEN_WIDTH,
+        x: nextIndex * SCREEN_WIDTH,
         animated: true,
       });
     } else {
@@ -102,7 +113,34 @@ export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      {}
+      <Modal
+        visible={langModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLangModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Choose Language / भाषा चुनें</Text>
+            <Text style={styles.modalSub}>Select your preferred display language:</Text>
+            
+            <TouchableOpacity 
+              style={[styles.langOptionCard, language === 'en' ? styles.langOptionActive : null]}
+              onPress={() => selectLanguage('en')}
+            >
+              <Text style={[styles.langOptionText, language === 'en' ? styles.langOptionTextActive : null]}>English</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.langOptionCard, language === 'hi' ? styles.langOptionActive : null]}
+              onPress={() => selectLanguage('hi')}
+            >
+              <Text style={[styles.langOptionText, language === 'hi' ? styles.langOptionTextActive : null]}>हिंदी (Hindi)</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <TouchableOpacity
         style={styles.skipButton}
         onPress={() => navigation.navigate('Login')}
@@ -249,5 +287,52 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     width: '100%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: Colors.white,
+    borderRadius: Colors.radius.md,
+    padding: 24,
+    ...Colors.shadow.medium,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.darkText,
+    marginBottom: 8,
+  },
+  modalSub: {
+    fontSize: 13,
+    color: Colors.grayText,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  langOptionCard: {
+    width: '100%',
+    padding: 16,
+    borderRadius: Colors.radius.sm,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  langOptionActive: {
+    borderColor: Colors.primaryBlue,
+    backgroundColor: Colors.primaryBlue + '08',
+  },
+  langOptionText: {
+    fontSize: 15,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.darkText,
+  },
+  langOptionTextActive: {
+    color: Colors.primaryBlue,
   },
 });

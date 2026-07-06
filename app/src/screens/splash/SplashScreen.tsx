@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   Platform,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Svg, { Path, Ellipse } from 'react-native-svg';
@@ -60,13 +61,12 @@ const IconBubble: React.FC<IconBubbleProps> = ({ children, color }) => (
 export const SplashScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
   const { language, setLanguage } = useSettingsStore();
-  // animation values
+  const [langModalVisible, setLangModalVisible] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const iconsAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // logo entrance fade  scale
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -93,7 +93,40 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      {}
+      <Modal
+        visible={langModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLangModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Choose Language / भाषा चुनें</Text>
+            <Text style={styles.modalSub}>Select your preferred display language:</Text>
+            
+            <TouchableOpacity 
+              style={[styles.langOptionCard, language === 'en' ? styles.langOptionActive : null]}
+              onPress={() => {
+                setLanguage('en');
+                setLangModalVisible(false);
+              }}
+            >
+              <Text style={[styles.langOptionText, language === 'en' ? styles.langOptionTextActive : null]}>English</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.langOptionCard, language === 'hi' ? styles.langOptionActive : null]}
+              onPress={() => {
+                setLanguage('hi');
+                setLangModalVisible(false);
+              }}
+            >
+              <Text style={[styles.langOptionText, language === 'hi' ? styles.langOptionTextActive : null]}>हिंदी (Hindi)</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.langToggle}>
         <TouchableOpacity
           style={[styles.langBtn, language === 'en' ? styles.langBtnActive : null]}
@@ -288,6 +321,53 @@ const styles = StyleSheet.create({
     color: Colors.grayText,
   },
   langTextActive: {
+    color: Colors.primaryBlue,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    backgroundColor: Colors.white,
+    borderRadius: Colors.radius.md,
+    padding: 24,
+    ...Colors.shadow.medium,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.darkText,
+    marginBottom: 8,
+  },
+  modalSub: {
+    fontSize: 13,
+    color: Colors.grayText,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  langOptionCard: {
+    width: '100%',
+    padding: 16,
+    borderRadius: Colors.radius.sm,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  langOptionActive: {
+    borderColor: Colors.primaryBlue,
+    backgroundColor: Colors.primaryBlue + '08',
+  },
+  langOptionText: {
+    fontSize: 15,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.darkText,
+  },
+  langOptionTextActive: {
     color: Colors.primaryBlue,
   },
 });

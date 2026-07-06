@@ -121,9 +121,10 @@ export const getReportById = asyncHandler(async (req: Request, res: Response) =>
   }
 
   // Citizens can only view their own reports
+  const reporterId = (report.userId as any)._id?.toString() || report.userId.toString();
   if (
     req.user!.role === 'citizen' &&
-    report.userId.toString() !== req.user!.id
+    reporterId !== req.user!.id
   ) {
     sendError(res, 'Forbidden', 403);
     return;
