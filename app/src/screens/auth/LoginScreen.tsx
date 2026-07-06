@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { User, Mail, Key } from 'lucide-react-native';
-import { RoleSelector } from '../../components/auth/RoleSelector';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
@@ -27,7 +26,6 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
-  const [role, setRole] = useState<'citizen' | 'admin'>('citizen');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -62,7 +60,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       const idToken = await loginWithEmail(email, password);
       
       // 2. login to backend
-      await loginWithBackend(idToken, email, role);
+      await loginWithBackend(idToken, email);
       
 
     } catch (error) {
@@ -92,10 +90,6 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <Card style={styles.card}>
-            <RoleSelector 
-              selectedRole={role} 
-              onRoleChange={(r) => { setRole(r); clearErrors(); }} 
-            />
 
             <Input
               label={t('emailAddress')}

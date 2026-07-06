@@ -5,20 +5,17 @@ import {
   ScrollView,
   StyleSheet,
   StatusBar,
-  Modal,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { X, ArrowRight } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/typography';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { CATEGORIES, ReportCategoryType } from '../../../constants/categories';
 import { CategoryTile } from '../../../components/dashboard/CategoryTile';
-import { PreventionTips } from '../../../components/report/PreventionTips';
-import { Button } from '../../../components/common/Button';
 import { ReportStackParamList } from '../../../types/navigation.types';
 
 type NavigationProp = NativeStackNavigationProp<ReportStackParamList, 'SelectCategory'>;
@@ -27,17 +24,9 @@ export const SelectCategoryScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategoryType | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-
   const handleSelect = (category: ReportCategoryType) => {
     setSelectedCategory(category);
-    setModalVisible(true);
-  };
-
-  const handleContinue = () => {
-    if (!selectedCategory) return;
-    setModalVisible(false);
-    navigation.navigate('Camera', { category: selectedCategory });
+    navigation.navigate('Camera', { category });
   };
 
   const environmentalCategories = CATEGORIES.filter((c) => c.group === 'environmental');
@@ -47,7 +36,6 @@ export const SelectCategoryScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      {}
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
           <X size={20} color={Colors.darkText} />
@@ -83,40 +71,6 @@ export const SelectCategoryScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
-
-      {}
-      {selectedCategory && (
-        <Modal
-          visible={modalVisible}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Important Guidelines</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)}>
-                  <X size={20} color={Colors.grayText} />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-                <PreventionTips category={selectedCategory} />
-              </ScrollView>
-
-              <View style={styles.modalFooter}>
-                <Button
-                  title={t('next')}
-                  onPress={handleContinue}
-                  variant="primary"
-                  style={styles.continueButton}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
-      )}
     </SafeAreaView>
   );
 };

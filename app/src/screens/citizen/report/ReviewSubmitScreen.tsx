@@ -62,19 +62,7 @@ export const ReviewSubmitScreen: React.FC = () => {
         );
       }
 
-      Alert.alert(
-        t('success'),
-        'Incident report submitted successfully. Thank you for keeping our surroundings clean.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-
-              navigation.getParent()?.navigate('Home');
-            },
-          },
-        ]
-      );
+      navigation.navigate('SafetyTips', { category });
     } catch (error) {
       console.error('Error submitting report:', error);
       Alert.alert(t('error'), 'An error occurred while uploading your report. Please try again.');

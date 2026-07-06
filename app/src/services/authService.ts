@@ -142,18 +142,16 @@ export const loginWithBackend = async (
   if (USE_MOCK) {
     const users = await getMockUsers();
     let user = email ? users.find(u => u.email?.toLowerCase() === email.toLowerCase()) : null;
-    if (user && role && user.role !== role) {
-      throw new Error(`This account is registered as ${user.role}, not ${role}.`);
-    }
     if (!user) {
       const derivedName = email ? email.split('@')[0] : 'Citizen';
       const capitalizedName = derivedName.charAt(0).toUpperCase() + derivedName.slice(1);
+      const isMockAdmin = email ? email.toLowerCase().includes('admin') : false;
       user = {
         id: 'mock-user-' + Math.random().toString(36).substr(2, 9),
         name: capitalizedName,
         phone: '9999999999',
         email: email || 'mock@civicsafe.com',
-        role: role || 'citizen',
+        role: isMockAdmin ? 'admin' : (role || 'citizen'),
         verificationStatus: 'verified',
         createdAt: new Date().toISOString(),
       };

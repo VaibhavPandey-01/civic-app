@@ -18,6 +18,7 @@ import { SelectCategoryScreen } from '../screens/citizen/report/SelectCategorySc
 import { CameraScreen } from '../screens/citizen/report/CameraScreen';
 import { DescriptionScreen } from '../screens/citizen/report/DescriptionScreen';
 import { ReviewSubmitScreen } from '../screens/citizen/report/ReviewSubmitScreen';
+import { SafetyTipsScreen } from '../screens/citizen/report/SafetyTipsScreen';
 import { Colors } from '../constants/colors';
 
 const Tab = createBottomTabNavigator<CitizenTabParamList>();
@@ -39,6 +40,7 @@ const ReportStackNavigator = () => {
       <Stack.Screen name="Camera" component={CameraScreen} />
       <Stack.Screen name="Description" component={DescriptionScreen} />
       <Stack.Screen name="ReviewSubmit" component={ReviewSubmitScreen} />
+      <Stack.Screen name="SafetyTips" component={SafetyTipsScreen} />
     </Stack.Navigator>
   );
 };

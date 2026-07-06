@@ -95,7 +95,23 @@ export const AdminReportDetailScreen: React.FC = () => {
 
   const categoryItem = CATEGORIES.find((c) => c.id === report.category);
 
-  // formats date helper
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'submitted':
+        return { bg: '#F3F4F6', text: '#374151', label: 'Submitted' };
+      case 'under_review':
+        return { bg: '#FEF3C7', text: '#D97706', label: 'Under Review' };
+      case 'assigned':
+        return { bg: '#DBEAFE', text: '#2563EB', label: 'Assigned' };
+      case 'action_started':
+        return { bg: '#FFEDD5', text: '#EA580C', label: 'Action Started' };
+      case 'resolved':
+        return { bg: '#D1FAE5', text: '#059669', label: 'Resolved' };
+      default:
+        return { bg: '#F3F4F6', text: '#374151', label: status.toUpperCase() };
+    }
+  };
+
   const formattedDate = new Date(report.createdAt).toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
@@ -112,11 +128,13 @@ export const AdminReportDetailScreen: React.FC = () => {
     : (report.userId || '');
   const userDisplayId = userIdStr ? userIdStr.slice(-6) : 'Unknown';
 
+  const resolvedEvent = history.find((h) => h.status === 'resolved');
+  const badgeConfig = getStatusBadge(report.status);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      {}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <ArrowLeft size={20} color={Colors.darkText} />
@@ -129,12 +147,18 @@ export const AdminReportDetailScreen: React.FC = () => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         
-        {}
+        <View style={styles.statusBadgeRow}>
+          <View style={[styles.badgeContainer, { backgroundColor: badgeConfig.bg }]}>
+            <Text style={[styles.badgeText, { color: badgeConfig.text }]}>
+              ● {badgeConfig.label}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.imageContainer}>
           <Image source={{ uri: report.imageURL }} style={styles.mainImage} />
         </View>
 
-        {}
         {report.status !== 'resolved' ? (
           <View style={styles.actionsPanel}>
             {!isAssignedToMe ? (
@@ -151,7 +175,6 @@ export const AdminReportDetailScreen: React.FC = () => {
               </View>
             )}
 
-            {}
             {report.status === 'action_started' && (
               <Button
                 title="Resolve Incident"
@@ -163,7 +186,6 @@ export const AdminReportDetailScreen: React.FC = () => {
           </View>
         ) : null}
 
-        {}
         {report.status !== 'resolved' && (
           <StatusUpdater
             reportId={report.id}
@@ -172,7 +194,52 @@ export const AdminReportDetailScreen: React.FC = () => {
           />
         )}
 
-        {}
+        {report.status === 'resolved' && (
+          <View style={styles.resolutionContainer}>
+            <Text style={styles.sectionTitle}>Resolution Details</Text>
+            <Card style={styles.detailsCard}>
+              <View style={styles.resolutionHeader}>
+                <CheckSquare size={18} color="#059669" />
+                <Text style={styles.resolutionTitle}>Issue Resolved</Text>
+              </View>
+
+              {report.resolutionNotes ? (
+                <View style={styles.descriptionBlock}>
+                  <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
+                  <Text style={styles.descriptionText}>{report.resolutionNotes}</Text>
+                </View>
+              ) : (
+                <View style={styles.descriptionBlock}>
+                  <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
+                  <Text style={[styles.descriptionText, { fontStyle: 'italic', color: Colors.grayText }]}>
+                    No resolution notes provided.
+                  </Text>
+                </View>
+              )}
+
+              {resolvedEvent && (
+                <View style={styles.resolverBlock}>
+                  <Text style={styles.resolverLabel}>
+                    Resolved by: <Text style={styles.resolverValue}>{resolvedEvent.changedBy.name}</Text>
+                  </Text>
+                  <Text style={styles.resolverDate}>
+                    Date: {new Date(resolvedEvent.changedAt).toLocaleString()}
+                  </Text>
+                </View>
+              )}
+            </Card>
+
+            {report.resolutionImage ? (
+              <View style={{ marginTop: Colors.spacing.md }}>
+                <Text style={styles.sectionTitle}>Resolution Proof Photo</Text>
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: report.resolutionImage }} style={styles.mainImage} />
+                </View>
+              </View>
+            ) : null}
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Incident Details</Text>
         <Card style={styles.detailsCard}>
           <View style={styles.metaRow}>
@@ -198,7 +265,6 @@ export const AdminReportDetailScreen: React.FC = () => {
           ) : null}
         </Card>
 
-        {}
         <Text style={styles.sectionTitle}>Incident Location</Text>
         <Card style={styles.detailsCard}>
           <Text style={{ fontSize: 13, color: Colors.darkText, marginBottom: Colors.spacing.sm, lineHeight: 18 }}>
@@ -277,6 +343,56 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  statusBadgeRow: {
+    width: '100%',
+    alignItems: 'flex-start',
+    marginBottom: Colors.spacing.md,
+  },
+  badgeContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: Typography.fontWeight.bold,
+    textTransform: 'uppercase',
+  },
+  resolutionContainer: {
+    width: '100%',
+    marginBottom: Colors.spacing.md,
+  },
+  resolutionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: Colors.spacing.md,
+  },
+  resolutionTitle: {
+    fontSize: 15,
+    fontWeight: Typography.fontWeight.bold,
+    color: '#059669',
+  },
+  resolverBlock: {
+    marginTop: Colors.spacing.md,
+    paddingTop: Colors.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  resolverLabel: {
+    fontSize: 13,
+    color: Colors.darkText,
+  },
+  resolverValue: {
+    fontWeight: 'bold',
+  },
+  resolverDate: {
+    fontSize: 11,
+    color: Colors.grayText,
+    marginTop: 4,
   },
   actionsPanel: {
     flexDirection: 'row',

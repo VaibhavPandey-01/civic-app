@@ -32,6 +32,9 @@ export type ReportStackParamList = {
     timestamp: number;
     description: string;
   };
+  SafetyTips: {
+    category: ReportCategoryType;
+  };
 };
 
 export type ReportsStackParamList = {
