@@ -58,8 +58,11 @@ export const AdminReportDetailScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    loadReportData();
-  }, [reportId]);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadReportData();
+    });
+    return unsubscribe;
+  }, [navigation, reportId]);
 
   const handleAssignToMe = async () => {
     if (!report || !currentAdmin) return;
