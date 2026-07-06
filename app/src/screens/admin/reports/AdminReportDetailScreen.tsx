@@ -139,7 +139,7 @@ export const AdminReportDetailScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('ReportList')}>
           <ArrowLeft size={20} color={Colors.darkText} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
