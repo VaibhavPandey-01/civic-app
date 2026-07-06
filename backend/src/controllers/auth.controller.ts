@@ -50,7 +50,10 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
   let firebaseUid: string;
   if (!firebaseAuth) {
-    if (env.NODE_ENV === 'development') {
+    const decodedToken = jwt.decode(idToken) as any;
+    if (decodedToken && (decodedToken.sub || decodedToken.user_id)) {
+      firebaseUid = decodedToken.sub || decodedToken.user_id;
+    } else if (env.NODE_ENV === 'development') {
       firebaseUid = `mock-uid-${phone.replace(/[^0-9]/g, '')}`;
     } else {
       sendError(res, 'Firebase Authentication is not configured on the server.', 500);
@@ -107,7 +110,10 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   let firebaseUid: string;
   if (!firebaseAuth) {
-    if (env.NODE_ENV === 'development') {
+    const decodedToken = jwt.decode(idToken) as any;
+    if (decodedToken && (decodedToken.sub || decodedToken.user_id)) {
+      firebaseUid = decodedToken.sub || decodedToken.user_id;
+    } else if (env.NODE_ENV === 'development') {
       // In local dev without Firebase, accept mock-jwt-token values passed by frontend stubs
       if (idToken.includes('admin')) {
         firebaseUid = 'mock-uid-admin';

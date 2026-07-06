@@ -4,8 +4,8 @@ import { useAuthStore } from '../context/useAuthStore';
 // base api connection config
 
 // e.g., http192.168.1.503000api
-export const API_BASE_URL = 'http://10.32.151.12:3000/api';
-export const USE_MOCK = true;
+export const API_BASE_URL = 'https://civic-app-3wdi.onrender.com/api';
+export const USE_MOCK = false;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
