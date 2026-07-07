@@ -16,6 +16,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: Colors.radius.md,
     padding: Colors.spacing.md,
+    borderWidth: 1,
+    borderColor: '#EFF6FF',
     ...Colors.shadow.soft,
   },
 });

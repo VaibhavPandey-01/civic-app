@@ -11,6 +11,12 @@ export const TRANSLATIONS = {
     back: "Back",
     openMap: "Open Map",
     viewDetails: "View Details & Act",
+    all: "All",
+    pending: "Pending",
+    resolved: "Resolved",
+    allCategories: "All Categories",
+    incidentTracker: "Incident Tracker",
+    noIncidentsFound: "No incidents match your selection.",
 
     // splash screen
     slogan: "Report. Track. Resolve.",
@@ -105,7 +111,23 @@ export const TRANSLATIONS = {
     pushNotificationsLabel: "Push Notifications",
     pushNotificationsSub: "Get status alerts for reported incidents",
     appLanguageLabel: "App Language",
-    appLanguageSub: "Choose your preferred display language"
+    appLanguageSub: "Choose your preferred display language",
+
+    // authority dashboard
+    authorityHub: "Authority Hub",
+    welcomeOfficer: "Welcome, ",
+    incidentLiveMap: "Incident Live Map",
+    liveMapDesc: "View reported issues coordinates on dynamic map view",
+    overviewAnalytics: "Overview Analytics",
+    totalReports: "Total Reports",
+    pendingIssues: "Pending Issues",
+    resolvedCases: "Resolved Cases",
+    safetyEmergencies: "Safety Emergencies",
+    recentIncidents: "Recent Incidents",
+    refresh: "Refresh",
+    officerProfile: "Officer Profile",
+    appLanguage: "App Language / भाषा",
+    notifications: "Notifications"
   },
   hi: {
     // general  common
@@ -119,6 +141,12 @@ export const TRANSLATIONS = {
     back: "पीछे",
     openMap: "नक्शा खोलें",
     viewDetails: "विवरण देखें और कार्रवाई करें",
+    all: "सभी",
+    pending: "लंबित",
+    resolved: "सुलझाए गए",
+    allCategories: "सभी श्रेणियां",
+    incidentTracker: "घटना ट्रैकर",
+    noIncidentsFound: "आपकी पसंद से कोई घटना मेल नहीं खाती।",
 
     // splash screen
     slogan: "रिपोर्ट. ट्रैक. समाधान।",
@@ -213,6 +241,22 @@ export const TRANSLATIONS = {
     pushNotificationsLabel: "पुश नोटिफिकेशन",
     pushNotificationsSub: "रिपोर्ट की गई घटनाओं के लिए स्थिति अलर्ट प्राप्त करें",
     appLanguageLabel: "ऐप की भाषा",
-    appLanguageSub: "अपनी पसंदीदा प्रदर्शन भाषा चुनें"
+    appLanguageSub: "अपनी पसंदीदा प्रदर्शन भाषा चुनें",
+
+    // authority dashboard
+    authorityHub: "प्राधिकरण हब",
+    welcomeOfficer: "स्वागत है, ",
+    incidentLiveMap: "लाइव घटना मानचित्र",
+    liveMapDesc: "गतिशील मानचित्र दृश्य पर रिपोर्ट किए गए मुद्दों के निर्देशांक देखें",
+    overviewAnalytics: "अवलोकन विश्लेषण",
+    totalReports: "कुल रिपोर्ट",
+    pendingIssues: "लंबित मुद्दे",
+    resolvedCases: "सुलझाए गए मामले",
+    safetyEmergencies: "सुरक्षा आपात स्थिति",
+    recentIncidents: "हाल की घटनाएं",
+    refresh: "ताज़ा करें",
+    officerProfile: "अधिकारी प्रोफ़ाइल",
+    appLanguage: "App Language / Language",
+    notifications: "सूचनाएं"
   }
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
@@ -35,6 +36,27 @@ export const UploadResolutionScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const contentY = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    fadeAnim.setValue(0);
+    contentY.setValue(20);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const pickFromGallery = async () => {
 
@@ -115,64 +137,63 @@ export const UploadResolutionScreen: React.FC = () => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        {}
-        <Card style={styles.infoCard}>
-          <AlertCircle size={16} color={Colors.primaryBlue} />
-          <Text style={styles.infoText}>
-            Admins may choose existing photos from the gallery to upload screenshots/reports sent by operational field workers.
-          </Text>
-        </Card>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: contentY }], flex: 1, backgroundColor: 'transparent' }}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
-        {}
-        {imageUri ? (
-          <View style={styles.previewContainer}>
-            <Image source={{ uri: imageUri }} style={styles.previewImage} />
-            <TouchableOpacity style={styles.removeBtn} onPress={() => setImageUri(null)}>
-              <X size={18} color={Colors.white} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.pickerOptionsContainer}>
-            <TouchableOpacity style={styles.pickerOption} onPress={takePhoto} activeOpacity={0.8}>
-              <View style={[styles.iconCircle, { backgroundColor: Colors.primaryBlue + '15' }]}>
-                <Camera size={24} color={Colors.primaryBlue} />
-              </View>
-              <Text style={styles.pickerOptionLabel}>Take Photo</Text>
-            </TouchableOpacity>
+          <Card style={styles.infoCard}>
+            <AlertCircle size={16} color={Colors.primaryBlue} />
+            <Text style={styles.infoText}>
+              Admins may choose existing photos from the gallery to upload screenshots/reports sent by operational field workers.
+            </Text>
+          </Card>
 
-            <TouchableOpacity style={styles.pickerOption} onPress={pickFromGallery} activeOpacity={0.8}>
-              <View style={[styles.iconCircle, { backgroundColor: Colors.environmentalGreen + '15' }]}>
-                <ImageIcon size={24} color={Colors.environmentalGreen} />
-              </View>
-              <Text style={styles.pickerOptionLabel}>Choose from Gallery</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          {imageUri ? (
+            <View style={styles.previewContainer}>
+              <Image source={{ uri: imageUri }} style={styles.previewImage} />
+              <TouchableOpacity style={styles.removeBtn} onPress={() => setImageUri(null)}>
+                <X size={18} color={Colors.white} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.pickerOptionsContainer}>
+              <TouchableOpacity style={styles.pickerOption} onPress={takePhoto} activeOpacity={0.8}>
+                <View style={[styles.iconCircle, { backgroundColor: Colors.primaryBlue + '15' }]}>
+                  <Camera size={24} color={Colors.primaryBlue} />
+                </View>
+                <Text style={styles.pickerOptionLabel}>Take Photo</Text>
+              </TouchableOpacity>
 
-        {}
-        <Card style={styles.notesCard}>
-          <Input
-            label="Resolution Notes"
-            placeholder="Describe what action was taken to resolve the issue..."
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={4}
-            style={styles.textArea}
-            containerStyle={styles.inputContainer}
+              <TouchableOpacity style={styles.pickerOption} onPress={pickFromGallery} activeOpacity={0.8}>
+                <View style={[styles.iconCircle, { backgroundColor: Colors.environmentalGreen + '15' }]}>
+                  <ImageIcon size={24} color={Colors.environmentalGreen} />
+                </View>
+                <Text style={styles.pickerOptionLabel}>Choose from Gallery</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Card style={styles.notesCard}>
+            <Input
+              label="Resolution Notes"
+              placeholder="Describe what action was taken to resolve the issue..."
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              numberOfLines={4}
+              style={styles.textArea}
+              containerStyle={styles.inputContainer}
+            />
+          </Card>
+
+          <Button
+            title="Submit Resolution Logs"
+            onPress={handleSubmit}
+            variant="secondary"
+            loading={submitting}
+            style={styles.submitBtn}
           />
-        </Card>
-
-        {}
-        <Button
-          title="Submit Resolution Logs"
-          onPress={handleSubmit}
-          variant="secondary"
-          loading={submitting}
-          style={styles.submitBtn}
-        />
-      </ScrollView>
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Alert,
   Linking,
   Platform,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
@@ -27,6 +28,7 @@ import { Button } from '../../../components/common/Button';
 import { Report, StatusHistory } from '../../../types/report.types';
 import { CATEGORIES } from '../../../constants/categories';
 import { ReportsStackParamList } from '../../../types/navigation.types';
+import { useSettingsStore } from '../../../context/useSettingsStore';
 
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'ReportDetail'>;
 type ScreenRouteProp = RouteProp<ReportsStackParamList, 'ReportDetail'>;
@@ -42,6 +44,53 @@ export const AdminReportDetailScreen: React.FC = () => {
   const [history, setHistory] = useState<StatusHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
+
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const contentY = useRef(new Animated.Value(20)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    contentY.setValue(20);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    if (!loading && report) {
+      runEntranceAnimation();
+    }
+  }, [loading]);
 
   const loadReportData = async () => {
     try {
@@ -148,145 +197,147 @@ export const AdminReportDetailScreen: React.FC = () => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        
-        <View style={styles.statusBadgeRow}>
-          <View style={[styles.badgeContainer, { backgroundColor: badgeConfig.bg }]}>
-            <Text style={[styles.badgeText, { color: badgeConfig.text }]}>
-              ● {badgeConfig.label}
-            </Text>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: contentY }], flex: 1, backgroundColor: 'transparent' }}>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
+          
+          <View style={styles.statusBadgeRow}>
+            <View style={[styles.badgeContainer, { backgroundColor: badgeConfig.bg }]}>
+              <Text style={[styles.badgeText, { color: badgeConfig.text }]}>
+                ● {badgeConfig.label}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.imageContainer}>
-          <Image source={{ uri: report.imageURL }} style={styles.mainImage} />
-        </View>
-
-        {report.status !== 'resolved' ? (
-          <View style={styles.actionsPanel}>
-            {!isAssignedToMe ? (
-              <Button
-                title="Assign to Me"
-                onPress={handleAssignToMe}
-                loading={assigning}
-                variant="outline"
-                style={styles.actionBtn}
-              />
-            ) : (
-              <View style={styles.ownershipBadge}>
-                <Text style={styles.ownershipText}>✓ Assigned to You</Text>
-              </View>
-            )}
-
-            {report.status === 'action_started' && (
-              <Button
-                title="Resolve Incident"
-                onPress={() => navigation.navigate('UploadResolution', { reportId: report.id })}
-                variant="secondary"
-                style={styles.actionBtn}
-              />
-            )}
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: report.imageURL }} style={styles.mainImage} />
           </View>
-        ) : null}
 
-        {report.status !== 'resolved' && (
-          <StatusUpdater
-            reportId={report.id}
-            currentStatus={report.status}
-            onStatusUpdated={loadReportData}
-          />
-        )}
-
-        {report.status === 'resolved' && (
-          <View style={styles.resolutionContainer}>
-            <Text style={styles.sectionTitle}>Resolution Details</Text>
-            <Card style={styles.detailsCard}>
-              <View style={styles.resolutionHeader}>
-                <CheckSquare size={18} color="#059669" />
-                <Text style={styles.resolutionTitle}>Issue Resolved</Text>
-              </View>
-
-              {report.resolutionNotes ? (
-                <View style={styles.descriptionBlock}>
-                  <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
-                  <Text style={styles.descriptionText}>{report.resolutionNotes}</Text>
-                </View>
+          {report.status !== 'resolved' ? (
+            <View style={styles.actionsPanel}>
+              {!isAssignedToMe ? (
+                <Button
+                  title="Assign to Me"
+                  onPress={handleAssignToMe}
+                  loading={assigning}
+                  variant="outline"
+                  style={styles.actionBtn}
+                />
               ) : (
-                <View style={styles.descriptionBlock}>
-                  <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
-                  <Text style={[styles.descriptionText, { fontStyle: 'italic', color: Colors.grayText }]}>
-                    No resolution notes provided.
-                  </Text>
+                <View style={styles.ownershipBadge}>
+                  <Text style={styles.ownershipText}>✓ Assigned to You</Text>
                 </View>
               )}
 
-              {resolvedEvent && (
-                <View style={styles.resolverBlock}>
-                  <Text style={styles.resolverLabel}>
-                    Resolved by: <Text style={styles.resolverValue}>{resolvedEvent.changedBy.name}</Text>
-                  </Text>
-                  <Text style={styles.resolverDate}>
-                    Date: {new Date(resolvedEvent.changedAt).toLocaleString()}
-                  </Text>
-                </View>
+              {report.status === 'action_started' && (
+                <Button
+                  title="Resolve Incident"
+                  onPress={() => navigation.navigate('UploadResolution', { reportId: report.id })}
+                  variant="secondary"
+                  style={styles.actionBtn}
+                />
               )}
-            </Card>
-
-            {report.resolutionImage ? (
-              <View style={{ marginTop: Colors.spacing.md }}>
-                <Text style={styles.sectionTitle}>Resolution Proof Photo</Text>
-                <View style={styles.imageContainer}>
-                  <Image source={{ uri: report.resolutionImage }} style={styles.mainImage} />
-                </View>
-              </View>
-            ) : null}
-          </View>
-        )}
-
-        <Text style={styles.sectionTitle}>Incident Details</Text>
-        <Card style={styles.detailsCard}>
-          <View style={styles.metaRow}>
-            <User size={16} color={Colors.grayText} />
-            <Text style={styles.metaText}>Reporter Reference: User_{userDisplayId}</Text>
-          </View>
-          <View style={styles.metaRow}>
-            <Calendar size={16} color={Colors.grayText} />
-            <Text style={styles.metaText}>{formattedDate}</Text>
-          </View>
-          <View style={styles.metaRow}>
-            <MapPin size={16} color={Colors.grayText} />
-            <Text style={styles.metaText}>
-              GPS Coordinates: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
-            </Text>
-          </View>
-
-          {report.description ? (
-            <View style={styles.descriptionBlock}>
-              <Text style={styles.descriptionLabel}>Citizen Description</Text>
-              <Text style={styles.descriptionText}>{report.description}</Text>
             </View>
           ) : null}
-        </Card>
 
-        <Text style={styles.sectionTitle}>Incident Location</Text>
-        <Card style={styles.detailsCard}>
-          <Text style={{ fontSize: 13, color: Colors.darkText, marginBottom: Colors.spacing.sm, lineHeight: 18 }}>
-            This incident was reported at GPS coordinates: <Text style={{ fontWeight: 'bold' }}>{report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}</Text>. You can open this location directly in your device's native maps application for navigation.
-          </Text>
-          <Button
-            title="Open in Google / Apple Maps"
-            onPress={() => {
-              const url = Platform.select({
-                ios: `maps:0,0?q=${report.latitude},${report.longitude}`,
-                android: `geo:0,0?q=${report.latitude},${report.longitude}(Incident)`,
-              }) || `https://www.google.com/maps/search/?api=1&query=${report.latitude},${report.longitude}`;
-              Linking.openURL(url).catch((err) => console.error('Failed to open map app:', err));
-            }}
-            variant="outline"
-          />
-        </Card>
+          {report.status !== 'resolved' && (
+            <StatusUpdater
+              reportId={report.id}
+              currentStatus={report.status}
+              onStatusUpdated={loadReportData}
+            />
+          )}
 
-      </ScrollView>
+          {report.status === 'resolved' && (
+            <View style={styles.resolutionContainer}>
+              <Text style={styles.sectionTitle}>Resolution Details</Text>
+              <Card style={styles.detailsCard}>
+                <View style={styles.resolutionHeader}>
+                  <CheckSquare size={18} color="#059669" />
+                  <Text style={styles.resolutionTitle}>Issue Resolved</Text>
+                </View>
+
+                {report.resolutionNotes ? (
+                  <View style={styles.descriptionBlock}>
+                    <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
+                    <Text style={styles.descriptionText}>{report.resolutionNotes}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.descriptionBlock}>
+                    <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
+                    <Text style={[styles.descriptionText, { fontStyle: 'italic', color: Colors.grayText }]}>
+                      No resolution notes provided.
+                    </Text>
+                  </View>
+                )}
+
+                {resolvedEvent && (
+                  <View style={styles.resolverBlock}>
+                    <Text style={styles.resolverLabel}>
+                      Resolved by: <Text style={styles.resolverValue}>{resolvedEvent.changedBy.name}</Text>
+                    </Text>
+                    <Text style={styles.resolverDate}>
+                      Date: {new Date(resolvedEvent.changedAt).toLocaleString()}
+                    </Text>
+                  </View>
+                )}
+              </Card>
+
+              {report.resolutionImage ? (
+                <View style={{ marginTop: Colors.spacing.md }}>
+                  <Text style={styles.sectionTitle}>Resolution Proof Photo</Text>
+                  <View style={styles.imageContainer}>
+                    <Image source={{ uri: report.resolutionImage }} style={styles.mainImage} />
+                  </View>
+                </View>
+              ) : null}
+            </View>
+          )}
+
+          <Text style={styles.sectionTitle}>Incident Details</Text>
+          <Card style={styles.detailsCard}>
+            <View style={styles.metaRow}>
+              <User size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>Reporter Reference: User_{userDisplayId}</Text>
+            </View>
+            <View style={styles.metaRow}>
+              <Calendar size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>{formattedDate}</Text>
+            </View>
+            <View style={styles.metaRow}>
+              <MapPin size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>
+                GPS Coordinates: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
+              </Text>
+            </View>
+
+            {report.description ? (
+              <View style={styles.descriptionBlock}>
+                <Text style={styles.descriptionLabel}>Citizen Description</Text>
+                <Text style={styles.descriptionText}>{report.description}</Text>
+              </View>
+            ) : null}
+          </Card>
+
+          <Text style={styles.sectionTitle}>Incident Location</Text>
+          <Card style={styles.detailsCard}>
+            <Text style={{ fontSize: 13, color: Colors.darkText, marginBottom: Colors.spacing.sm, lineHeight: 18 }}>
+              This incident was reported at GPS coordinates: <Text style={{ fontWeight: 'bold' }}>{report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}</Text>. You can open this location directly in your device's native maps application for navigation.
+            </Text>
+            <Button
+              title="Open in Google / Apple Maps"
+              onPress={() => {
+                const url = Platform.select({
+                  ios: `maps:0,0?q=${report.latitude},${report.longitude}`,
+                  android: `geo:0,0?q=${report.latitude},${report.longitude}(Incident)`,
+                }) || `https://www.google.com/maps/search/?api=1&query=${report.latitude},${report.longitude}`;
+                Linking.openURL(url).catch((err) => console.error('Failed to open map app:', err));
+              }}
+              variant="outline"
+            />
+          </Card>
+
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -332,7 +383,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     padding: Colors.spacing.md,
-    paddingBottom: Colors.spacing.xl,
+    paddingBottom: 110,
   },
   imageContainer: {
     width: '100%',

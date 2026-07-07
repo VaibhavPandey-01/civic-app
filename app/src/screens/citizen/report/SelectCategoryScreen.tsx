@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -24,6 +25,59 @@ export const SelectCategoryScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategoryType | null>(null);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerY = useRef(new Animated.Value(-15)).current;
+  const instructionY = useRef(new Animated.Value(10)).current;
+  const grid1Y = useRef(new Animated.Value(20)).current;
+  const grid2Y = useRef(new Animated.Value(20)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    headerY.setValue(-15);
+    instructionY.setValue(10);
+    grid1Y.setValue(20);
+    grid2Y.setValue(20);
+
+    Animated.stagger(85, [
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(headerY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(instructionY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(grid1Y, {
+        toValue: 0,
+        tension: 55,
+        friction: 7.5,
+        useNativeDriver: true,
+      }),
+      Animated.spring(grid2Y, {
+        toValue: 0,
+        tension: 55,
+        friction: 7.5,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    runEntranceAnimation();
+  }, []);
+
   const handleSelect = (category: ReportCategoryType) => {
     setSelectedCategory(category);
     navigation.navigate('Camera', { category });
@@ -36,40 +90,48 @@ export const SelectCategoryScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
-          <X size={20} color={Colors.darkText} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('selectCategoryTitle')}</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.getParent()?.navigate('CitizenTabs')}>
+            <X size={20} color={Colors.darkText} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('selectCategoryTitle')}</Text>
+          <View style={styles.placeholder} />
+        </View>
+      </Animated.View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.instruction}>
-          {t('chooseMatchingCategory')}
-        </Text>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: instructionY }] }}>
+          <Text style={styles.instruction}>
+            {t('chooseMatchingCategory')}
+          </Text>
+        </Animated.View>
 
-        <Text style={styles.sectionTitle}>Environmental Pollution</Text>
-        <View style={styles.grid}>
-          {environmentalCategories.map((cat) => (
-            <CategoryTile
-              key={cat.id}
-              category={cat}
-              onPress={() => handleSelect(cat.id)}
-            />
-          ))}
-        </View>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid1Y }] }}>
+          <Text style={styles.sectionTitle}>Environmental Pollution</Text>
+          <View style={styles.grid}>
+            {environmentalCategories.map((cat) => (
+              <CategoryTile
+                key={cat.id}
+                category={cat}
+                onPress={() => handleSelect(cat.id)}
+              />
+            ))}
+          </View>
+        </Animated.View>
 
-        <Text style={styles.sectionTitle}>Safety & Security</Text>
-        <View style={styles.grid}>
-          {safetyCategories.map((cat) => (
-            <CategoryTile
-              key={cat.id}
-              category={cat}
-              onPress={() => handleSelect(cat.id)}
-            />
-          ))}
-        </View>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid2Y }] }}>
+          <Text style={styles.sectionTitle}>Safety & Security</Text>
+          <View style={styles.grid}>
+            {safetyCategories.map((cat) => (
+              <CategoryTile
+                key={cat.id}
+                category={cat}
+                onPress={() => handleSelect(cat.id)}
+              />
+            ))}
+          </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );

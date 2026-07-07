@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,6 +20,7 @@ import { useAuthStore } from '../../../context/useAuthStore';
 import { Report, ReportStatus } from '../../../types/report.types';
 import { RecentReportCard } from '../../../components/dashboard/RecentReportCard';
 import { ReportsStackParamList } from '../../../types/navigation.types';
+import { useSettingsStore } from '../../../context/useSettingsStore';
 
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'ReportList'>;
 
@@ -46,6 +48,72 @@ export const ReportTrackingScreen: React.FC = () => {
   const [activeChip, setActiveChip] = useState<'all' | ReportStatus>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerY = useRef(new Animated.Value(-15)).current;
+  const chipsY = useRef(new Animated.Value(-10)).current;
+  const listY = useRef(new Animated.Value(20)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    headerY.setValue(-15);
+    chipsY.setValue(-10);
+    listY.setValue(20);
+
+    Animated.stagger(80, [
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(headerY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(chipsY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(listY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      runEntranceAnimation();
+    }
+  }, [loading]);
 
   const fetchReports = async (isARefresh = false) => {
     if (!user) return;
@@ -86,60 +154,65 @@ export const ReportTrackingScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      {}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('trackReportsTitle')}</Text>
-      </View>
-
-      {}
-      <View style={styles.chipsContainer}>
-        <FlatList
-          data={CHIPS}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.chipsContent}
-          renderItem={({ item }) => {
-            const isActive = activeChip === item.id;
-            return (
-              <TouchableOpacity
-                style={[styles.chip, isActive ? styles.chipActive : null]}
-                onPress={() => setActiveChip(item.id)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </View>
-
-      {}
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primaryBlue} />
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t('trackReportsTitle')}</Text>
         </View>
-      ) : filteredReports.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>{t('noReportsYet')}</Text>
+      </Animated.View>
+
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: chipsY }], zIndex: 10 }}>
+        <View style={styles.chipsContainer}>
+          <FlatList
+            data={CHIPS}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.chipsContent}
+            renderItem={({ item }) => {
+              const isActive = activeChip === item.id;
+              return (
+                <TouchableOpacity
+                  style={[styles.chip, isActive ? styles.chipActive : null]}
+                  onPress={() => setActiveChip(item.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
         </View>
-      ) : (
-        <FlatList
-          data={filteredReports}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          renderItem={({ item }) => (
-            <RecentReportCard
-              report={item}
-              onPress={() => navigation.navigate('ReportDetail', { reportId: item.id })}
-            />
-          )}
-        />
-      )}
+      </Animated.View>
+
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: listY }], flex: 1, backgroundColor: 'transparent' }}>
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={Colors.primaryBlue} />
+          </View>
+        ) : filteredReports.length === 0 ? (
+          <View style={styles.center}>
+            <Text style={styles.emptyText}>{t('noReportsYet')}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredReports}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            renderItem={({ item }) => (
+              <RecentReportCard
+                report={item}
+                onPress={() => navigation.navigate('ReportDetail', { reportId: item.id })}
+              />
+            )}
+          />
+        )}
+      </Animated.View>
     </SafeAreaView>
   );
 };

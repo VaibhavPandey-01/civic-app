@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Dimensions,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
@@ -32,28 +33,144 @@ interface ChartBarProps {
   value: number;
   max: number;
   color: string;
+  delay: number;
 }
 
-const ChartBar: React.FC<ChartBarProps> = ({ label, value, max, color }) => {
+const ChartBar: React.FC<ChartBarProps> = ({ label, value, max, color, delay }) => {
   const percentage = max > 0 ? (value / max) * 100 : 0;
+  const barWidth = useRef(new Animated.Value(0)).current;
+  const barOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(barOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.spring(barWidth, {
+          toValue: percentage,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [percentage, delay]);
+
+  const animatedWidth = barWidth.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
 
   return (
-    <View style={styles.barRow}>
+    <Animated.View style={[styles.barRow, { opacity: barOpacity }]}>
       <Text style={styles.barLabel} numberOfLines={1}>
         {label}
       </Text>
       <View style={styles.barTrack}>
-        <View
+        <Animated.View
           style={[
             styles.barFill,
-            { width: `${percentage}%`, backgroundColor: color },
+            { width: animatedWidth, backgroundColor: color },
           ]}
         />
       </View>
       <View style={styles.valueWrapper}>
         <Text style={styles.barValue}>{value}</Text>
       </View>
-    </View>
+    </Animated.View>
+  );
+};
+
+interface AnimatedStatProps {
+  targetValue: number;
+  duration?: number;
+}
+
+const AnimatedStat: React.FC<AnimatedStatProps> = ({ targetValue, duration = 800 }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const animRef = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    animRef.setValue(0);
+    const listener = animRef.addListener(({ value }) => {
+      setDisplayValue(Math.round(value));
+    });
+    Animated.timing(animRef, {
+      toValue: targetValue,
+      duration,
+      useNativeDriver: false,
+    }).start();
+    return () => animRef.removeListener(listener);
+  }, [targetValue]);
+
+  return <Text style={styles.statVal}>{displayValue}</Text>;
+};
+
+interface AnimatedPieChartProps {
+  data: { name: string; population: number; color: string; legendFontColor: string; legendFontSize: number }[];
+  width: number;
+  height: number;
+  delay?: number;
+}
+
+const AnimatedPieChart: React.FC<AnimatedPieChartProps> = ({ data, width, height, delay = 600 }) => {
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-15deg', '0deg'],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        opacity: opacityAnim,
+        transform: [{ scale: scaleAnim }, { rotate }],
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <PieChart
+        data={data}
+        width={width}
+        height={height}
+        chartConfig={{ color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})` }}
+        accessor="population"
+        backgroundColor="transparent"
+        paddingLeft="10"
+        absolute
+      />
+    </Animated.View>
   );
 };
 
@@ -65,6 +182,90 @@ export const AnalyticsScreen: React.FC = () => {
   const [resolvedCount, setResolvedCount] = useState(0);
   const [byStatus, setByStatus] = useState<{ label: string; count: number; rawStatus: string }[]>([]);
   const [byCategory, setByCategory] = useState<{ label: string; count: number; color: string }[]>([]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerY = useRef(new Animated.Value(-15)).current;
+  const statsY = useRef(new Animated.Value(15)).current;
+  const chart1Y = useRef(new Animated.Value(20)).current;
+  const chart2Y = useRef(new Animated.Value(20)).current;
+  const contentScale = useRef(new Animated.Value(1)).current;
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    headerY.setValue(-15);
+    statsY.setValue(15);
+    chart1Y.setValue(20);
+    chart2Y.setValue(20);
+    contentScale.setValue(1);
+    contentOpacity.setValue(1);
+
+    Animated.stagger(90, [
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(headerY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(statsY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(chart1Y, {
+        toValue: 0,
+        tension: 45,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(chart2Y, {
+        toValue: 0,
+        tension: 45,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleRefresh = () => {
+    Animated.parallel([
+      Animated.timing(contentScale, {
+        toValue: 0.85,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setRefreshing(true);
+      loadAnalytics(true).then(() => {
+        Animated.parallel([
+          Animated.spring(contentScale, {
+            toValue: 1,
+            tension: 85,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    });
+  };
 
   const loadAnalytics = async (isRef = false) => {
     try {
@@ -109,9 +310,11 @@ export const AnalyticsScreen: React.FC = () => {
     loadAnalytics();
   }, []);
 
-  const handleRefresh = () => {
-    loadAnalytics(true);
-  };
+  useEffect(() => {
+    if (!loading) {
+      runEntranceAnimation();
+    }
+  }, [loading]);
 
   const maxStatus = byStatus.reduce((max, item) => (item.count > max ? item.count : max), 0);
   const maxCategory = byCategory.reduce((max, item) => (item.count > max ? item.count : max), 0);
@@ -140,111 +343,114 @@ export const AnalyticsScreen: React.FC = () => {
     <View style={[styles.safeArea, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>System Analytics</Text>
-        <TouchableOpacity 
-          style={styles.refreshBtn} 
-          onPress={handleRefresh} 
-          disabled={loading || refreshing}
-          activeOpacity={0.8}
-        >
-          {refreshing ? (
-            <ActivityIndicator size="small" color={Colors.primaryBlue} />
-          ) : (
-            <RefreshCw size={18} color={Colors.primaryBlue} />
-          )}
-        </TouchableOpacity>
-      </View>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>System Analytics</Text>
+          <TouchableOpacity 
+            style={styles.refreshBtn} 
+            onPress={handleRefresh} 
+            disabled={loading || refreshing}
+            activeOpacity={0.8}
+          >
+            {refreshing ? (
+              <ActivityIndicator size="small" color={Colors.primaryBlue} />
+            ) : (
+              <RefreshCw size={18} color={Colors.primaryBlue} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
 
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={Colors.primaryBlue} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          
-          <View style={styles.gridContainer}>
-            <Card style={[styles.statCard, { borderLeftColor: Colors.primaryBlue, borderLeftWidth: 4 }]}>
-              <View style={styles.statIconWrapper}>
-                <BarChart2 size={20} color={Colors.primaryBlue} />
+        <Animated.View style={{ opacity: contentOpacity, transform: [{ scale: contentScale }], flex: 1, backgroundColor: 'transparent' }}>
+          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: statsY }] }}>
+              <View style={styles.gridContainer}>
+                <Card style={[styles.statCard, { borderLeftColor: Colors.primaryBlue, borderLeftWidth: 4 }]}>
+                  <View style={styles.statIconWrapper}>
+                    <BarChart2 size={20} color={Colors.primaryBlue} />
+                  </View>
+                  <AnimatedStat targetValue={total} />
+                  <Text style={styles.statLabel}>Total Load</Text>
+                </Card>
+
+                <Card style={[styles.statCard, { borderLeftColor: '#F59E0B', borderLeftWidth: 4 }]}>
+                  <View style={[styles.statIconWrapper, { backgroundColor: '#FFF7ED' }]}>
+                    <Clock size={20} color="#F59E0B" />
+                  </View>
+                  <AnimatedStat targetValue={activeTickets} />
+                  <Text style={styles.statLabel}>Active Cases</Text>
+                </Card>
+
+                <Card style={[styles.statCard, { borderLeftColor: '#10B981', borderLeftWidth: 4 }]}>
+                  <View style={[styles.statIconWrapper, { backgroundColor: '#F0FDF4' }]}>
+                    <CheckCircle2 size={20} color="#10B981" />
+                  </View>
+                  <AnimatedStat targetValue={resolvedCount} />
+                  <Text style={styles.statLabel}>Resolved Cases</Text>
+                </Card>
               </View>
-              <Text style={styles.statVal}>{total}</Text>
-              <Text style={styles.statLabel}>Total Load</Text>
-            </Card>
+            </Animated.View>
 
-            <Card style={[styles.statCard, { borderLeftColor: '#F59E0B', borderLeftWidth: 4 }]}>
-              <View style={[styles.statIconWrapper, { backgroundColor: '#FFF7ED' }]}>
-                <Clock size={20} color="#F59E0B" />
-              </View>
-              <Text style={styles.statVal}>{activeTickets}</Text>
-              <Text style={styles.statLabel}>Active Cases</Text>
-            </Card>
-
-            <Card style={[styles.statCard, { borderLeftColor: '#10B981', borderLeftWidth: 4 }]}>
-              <View style={[styles.statIconWrapper, { backgroundColor: '#F0FDF4' }]}>
-                <CheckCircle2 size={20} color="#10B981" />
-              </View>
-              <Text style={styles.statVal}>{resolvedCount}</Text>
-              <Text style={styles.statLabel}>Resolved Cases</Text>
-            </Card>
-          </View>
-
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <Activity size={16} color={Colors.primaryBlue} />
-              <Text style={styles.chartTitle}>Reports by Status</Text>
-            </View>
-            <Card style={styles.chartCard}>
-              {byStatus.length === 0 ? (
-                <Text style={styles.emptyText}>No status statistics available.</Text>
-              ) : (
-                byStatus.map((item, index) => (
-                  <ChartBar
-                    key={index}
-                    label={item.label}
-                    value={item.count}
-                    max={maxStatus}
-                    color={getStatusColor(item.rawStatus)}
-                  />
-                ))
-              )}
-            </Card>
-          </View>
-
-          <View style={styles.chartSection}>
-            <View style={styles.sectionHeader}>
-              <TrendingUp size={16} color={Colors.environmentalGreen} />
-              <Text style={styles.chartTitle}>Incidents by Category</Text>
-            </View>
-            <Card style={styles.chartCard}>
-              {byCategory.length === 0 ? (
-                <Text style={styles.emptyText}>No category statistics available.</Text>
-              ) : (
-                <View style={styles.pieContainer}>
-                  <PieChart
-                    data={byCategory.map((item) => ({
-                      name: item.label,
-                      population: item.count,
-                      color: item.color,
-                      legendFontColor: Colors.darkText,
-                      legendFontSize: 10,
-                    }))}
-                    width={SCREEN_WIDTH - 64}
-                    height={180}
-                    chartConfig={{
-                      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                    }}
-                    accessor={"population"}
-                    backgroundColor={"transparent"}
-                    paddingLeft={"10"}
-                    absolute
-                  />
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: chart1Y }] }}>
+              <View style={styles.chartSection}>
+                <View style={styles.sectionHeader}>
+                  <Activity size={16} color={Colors.primaryBlue} />
+                  <Text style={styles.chartTitle}>Reports by Status</Text>
                 </View>
-              )}
-            </Card>
-          </View>
+                <Card style={styles.chartCard}>
+                  {byStatus.length === 0 ? (
+                    <Text style={styles.emptyText}>No status statistics available.</Text>
+                  ) : (
+                    byStatus.map((item, index) => (
+                      <ChartBar
+                        key={index}
+                        label={item.label}
+                        value={item.count}
+                        max={maxStatus}
+                        color={getStatusColor(item.rawStatus)}
+                        delay={400 + index * 120}
+                      />
+                    ))
+                  )}
+                </Card>
+              </View>
+            </Animated.View>
 
-        </ScrollView>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: chart2Y }] }}>
+              <View style={styles.chartSection}>
+                <View style={styles.sectionHeader}>
+                  <TrendingUp size={16} color={Colors.environmentalGreen} />
+                  <Text style={styles.chartTitle}>Incidents by Category</Text>
+                </View>
+                <Card style={styles.chartCard}>
+                  {byCategory.length === 0 ? (
+                    <Text style={styles.emptyText}>No category statistics available.</Text>
+                  ) : (
+                    <AnimatedPieChart
+                      data={byCategory.map((item) => ({
+                        name: item.label,
+                        population: item.count,
+                        color: item.color,
+                        legendFontColor: Colors.darkText,
+                        legendFontSize: 10,
+                      }))}
+                      width={SCREEN_WIDTH - 64}
+                      height={180}
+                      delay={500}
+                    />
+                  )}
+                </Card>
+              </View>
+            </Animated.View>
+
+          </ScrollView>
+        </Animated.View>
       )}
     </View>
   );

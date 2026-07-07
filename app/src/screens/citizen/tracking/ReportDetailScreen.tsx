@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
   Platform,
+  Animated,
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +29,7 @@ import { Button } from '../../../components/common/Button';
 import { Report, StatusHistory } from '../../../types/report.types';
 import { CATEGORIES } from '../../../constants/categories';
 import { ReportsStackParamList } from '../../../types/navigation.types';
+import { useSettingsStore } from '../../../context/useSettingsStore';
 
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'ReportDetail'>;
 type ScreenRouteProp = RouteProp<ReportsStackParamList, 'ReportDetail'>;
@@ -42,7 +44,53 @@ export const ReportDetailScreen: React.FC = () => {
   const [history, setHistory] = useState<StatusHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // feedback states
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const contentY = useRef(new Animated.Value(20)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    contentY.setValue(20);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 350,
+        useNativeDriver: true,
+      }),
+      Animated.spring(contentY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    if (!loading && report) {
+      runEntranceAnimation();
+    }
+  }, [loading]);
+
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -129,81 +177,82 @@ export const ReportDetailScreen: React.FC = () => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        
-        {}
-        <Text style={styles.sectionTitle}>{t('routingTimeline')}</Text>
-        <ReportTimeline
-          currentStatus={report.status}
-          historyLogs={history.map((h) => ({
-            status: h.status,
-            changedAt: h.changedAt,
-            remarks: h.remarks,
-          }))}
-        />
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: contentY }], flex: 1, backgroundColor: 'transparent' }}>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
+          
+          <Text style={styles.sectionTitle}>{t('routingTimeline')}</Text>
+          <ReportTimeline
+            currentStatus={report.status}
+            historyLogs={history.map((h) => ({
+              status: h.status,
+              changedAt: h.changedAt,
+              remarks: h.remarks,
+            }))}
+          />
 
-        {}
-        {report.status === 'resolved' && (
-          <View style={styles.resolutionContainer}>
-            <Text style={styles.sectionTitle}>{t('resolutionComparison')}</Text>
-            <View style={styles.comparisonContainer}>
-              <View style={styles.comparisonBox}>
-                <Image source={{ uri: report.imageURL }} style={styles.comparisonImage} />
-                <Text style={styles.comparisonLabel}>{t('beforeIncident')}</Text>
+          {report.status === 'resolved' && (
+            <View style={styles.resolutionContainer}>
+              <Text style={styles.sectionTitle}>{t('resolutionComparison')}</Text>
+              <View style={styles.comparisonContainer}>
+                <View style={styles.comparisonBox}>
+                  <Image source={{ uri: report.imageURL }} style={styles.comparisonImage} />
+                  <Text style={styles.comparisonLabel}>{t('beforeIncident')}</Text>
+                </View>
+                <View style={styles.comparisonBox}>
+                  <Image
+                    source={{ uri: report.resolutionImage || report.imageURL }}
+                    style={styles.comparisonImage}
+                  />
+                  <Text style={styles.comparisonLabel}>{t('afterResolved')}</Text>
+                </View>
               </View>
-              <View style={styles.comparisonBox}>
-                <Image
-                  source={{ uri: report.resolutionImage || report.imageURL }}
-                  style={styles.comparisonImage}
+              {report.resolutionNotes ? (
+                <Card style={styles.resolutionNotesCard}>
+                  <Text style={styles.notesTitle}>{t('resolutionNotes')}</Text>
+                  <Text style={styles.notesContent}>{report.resolutionNotes}</Text>
+                </Card>
+              ) : null}
+
+              {!feedbackSubmitted && (
+                <Button
+                  title={t('leaveFeedbackBtn')}
+                  onPress={() => setFeedbackModalVisible(true)}
+                  style={styles.feedbackBtn}
                 />
-                <Text style={styles.comparisonLabel}>{t('afterResolved')}</Text>
+              )}
+            </View>
+          )}
+
+          <Text style={styles.sectionTitle}>{t('reportDetailsTitle')}</Text>
+          <Card style={styles.metaCard}>
+            <View style={styles.metaRow}>
+              <ClipboardList size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>
+                Category: {categoryItem?.label || report.category}
+              </Text>
+            </View>
+            <View style={styles.metaRow}>
+              <MapPin size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>
+                GPS: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
+              </Text>
+            </View>
+            <View style={styles.metaRow}>
+              <Calendar size={16} color={Colors.grayText} />
+              <Text style={styles.metaText}>
+                Submitted on: {new Date(report.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
+            {report.description ? (
+              <View style={styles.descriptionContainer}>
+                <Text style={styles.descriptionLabel}>{t('descriptionLabel')}</Text>
+                <Text style={styles.descriptionText}>{report.description}</Text>
               </View>
-            </View>
-            {report.resolutionNotes ? (
-              <Card style={styles.resolutionNotesCard}>
-                <Text style={styles.notesTitle}>{t('resolutionNotes')}</Text>
-                <Text style={styles.notesContent}>{report.resolutionNotes}</Text>
-              </Card>
             ) : null}
+          </Card>
+        </ScrollView>
+      </Animated.View>
 
-            {}
-            {!feedbackSubmitted && (
-              <Button
-                title={t('leaveFeedbackBtn')}
-                onPress={() => setFeedbackModalVisible(true)}
-                variant="primary"
-                style={styles.feedbackBtn}
-              />
-            )}
-          </View>
-        )}
-
-        {}
-        <Text style={styles.sectionTitle}>{t('reportDetailsTitle')}</Text>
-        <Card style={styles.metaCard}>
-          <View style={styles.metaRow}>
-            <MapPin size={16} color={Colors.grayText} />
-            <Text style={styles.metaText}>
-              Location: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
-            </Text>
-          </View>
-          <View style={styles.metaRow}>
-            <Calendar size={16} color={Colors.grayText} />
-            <Text style={styles.metaText}>
-              Submitted on: {new Date(report.createdAt).toLocaleDateString()}
-            </Text>
-          </View>
-          {report.description ? (
-            <View style={styles.descriptionContainer}>
-              <Text style={styles.descriptionLabel}>{t('descriptionLabel')}</Text>
-              <Text style={styles.descriptionText}>{report.description}</Text>
-            </View>
-          ) : null}
-        </Card>
-
-      </ScrollView>
-
-      {}
       <Modal
         visible={feedbackModalVisible}
         animationType="slide"
@@ -291,7 +340,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     padding: Colors.spacing.md,
-    paddingBottom: Colors.spacing.xl,
+    paddingBottom: 110,
   },
   sectionTitle: {
     fontSize: 13,

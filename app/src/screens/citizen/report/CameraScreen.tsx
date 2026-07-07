@@ -104,7 +104,7 @@ export const CameraScreen: React.FC = () => {
         <SafeAreaView style={styles.overlay}>
           {}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => navigation.getParent()?.navigate('CitizenTabs')}>
               <X size={24} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.title}>Align Incident Photo</Text>

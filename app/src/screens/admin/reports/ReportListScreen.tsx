@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,8 +20,8 @@ import { getAllReports } from '../../../services/adminService';
 import { ReportListItem } from '../../../components/admin/ReportListItem';
 import { Report, ReportStatus } from '../../../types/report.types';
 import { CATEGORIES } from '../../../constants/categories';
+import { useSettingsStore } from '../../../context/useSettingsStore';
 
-// available filters
 const STATUS_FILTERS: { id: 'all' | ReportStatus; label: string }[] = [
   { id: 'all', label: 'All Statuses' },
   { id: 'submitted', label: 'Submitted' },
@@ -44,9 +45,150 @@ export const ReportListScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // active filters
   const [selectedStatus, setSelectedStatus] = useState<'all' | ReportStatus>('all');
   const [selectedDept, setSelectedDept] = useState('all');
+
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerY = useRef(new Animated.Value(-15)).current;
+  const searchY = useRef(new Animated.Value(-10)).current;
+  const filterY = useRef(new Animated.Value(-10)).current;
+  const listY = useRef(new Animated.Value(20)).current;
+  const listScale = useRef(new Animated.Value(1)).current;
+  const listOpacity = useRef(new Animated.Value(1)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    headerY.setValue(-15);
+    searchY.setValue(-10);
+    filterY.setValue(-10);
+    listY.setValue(20);
+    listScale.setValue(1);
+    listOpacity.setValue(1);
+
+    Animated.stagger(70, [
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(headerY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(searchY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(filterY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(listY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const animateFilterChange = (callback: () => void) => {
+    Animated.parallel([
+      Animated.timing(listScale, {
+        toValue: 0.9,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(listOpacity, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      callback();
+      Animated.parallel([
+        Animated.spring(listScale, {
+          toValue: 1,
+          tension: 90,
+          friction: 6,
+          useNativeDriver: true,
+        }),
+        Animated.timing(listOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const handleStatusChange = (status: 'all' | ReportStatus) => {
+    animateFilterChange(() => setSelectedStatus(status));
+  };
+
+  const handleDeptChange = (dept: string) => {
+    animateFilterChange(() => setSelectedDept(dept));
+  };
+
+  const handleRefresh = () => {
+    Animated.parallel([
+      Animated.timing(listScale, {
+        toValue: 0.85,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(listOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setRefreshing(true);
+      fetchReportsData(true).then(() => {
+        Animated.parallel([
+          Animated.spring(listScale, {
+            toValue: 1,
+            tension: 85,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.timing(listOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    });
+  };
 
   const fetchReportsData = async (isARefresh = false) => {
     try {
@@ -77,10 +219,11 @@ export const ReportListScreen: React.FC = () => {
     fetchReportsData();
   }, [selectedStatus, selectedDept]);
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchReportsData(true);
-  };
+  useEffect(() => {
+    if (!loading) {
+      runEntranceAnimation();
+    }
+  }, [loading]);
 
   const filteredReports = reports.filter((r) => {
     const categoryName = CATEGORIES.find((c) => c.id === r.category)?.label || r.category;
@@ -94,98 +237,104 @@ export const ReportListScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      {}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>All Reports</Text>
-      </View>
-
-      {}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={18} color={Colors.grayText} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by description or category..."
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholderTextColor={Colors.grayText}
-            returnKeyType="done"
-          />
-          {searchText ? (
-            <TouchableOpacity onPress={() => setSearchText('')}>
-              <X size={18} color={Colors.grayText} />
-            </TouchableOpacity>
-          ) : null}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>All Reports</Text>
         </View>
-      </View>
+      </Animated.View>
 
-      {}
-      <View style={styles.filtersWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-          {}
-          <Text style={styles.filterGroupLabel}>Status:</Text>
-          {STATUS_FILTERS.map((item) => {
-            const isActive = selectedStatus === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.filterChip, isActive ? styles.chipActive : null]}
-                onPress={() => setSelectedStatus(item.id)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                  {item.label}
-                </Text>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: searchY }] }}>
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Search size={18} color={Colors.grayText} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by description or category..."
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholderTextColor={Colors.grayText}
+              returnKeyType="done"
+            />
+            {searchText ? (
+              <TouchableOpacity onPress={() => setSearchText('')}>
+                <X size={18} color={Colors.grayText} />
               </TouchableOpacity>
-            );
-          })}
-
-          <View style={styles.filterDivider} />
-
-          {}
-          <Text style={styles.filterGroupLabel}>Dept:</Text>
-          {DEPT_FILTERS.map((item) => {
-            const isActive = selectedDept === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                style={[styles.filterChip, isActive ? styles.chipActive : null]}
-                onPress={() => setSelectedDept(item.id)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {}
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primaryBlue} />
+            ) : null}
+          </View>
         </View>
-      ) : filteredReports.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No reports found matching your parameters.</Text>
+      </Animated.View>
+
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: filterY }] }}>
+        <View style={styles.filtersWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+            <Text style={styles.filterGroupLabel}>Status:</Text>
+            {STATUS_FILTERS.map((item) => {
+              const isActive = selectedStatus === item.id;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.filterChip, isActive ? styles.chipActive : null]}
+                  onPress={() => handleStatusChange(item.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+
+            <View style={styles.filterDivider} />
+
+            <Text style={styles.filterGroupLabel}>Dept:</Text>
+            {DEPT_FILTERS.map((item) => {
+              const isActive = selectedDept === item.id;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.filterChip, isActive ? styles.chipActive : null]}
+                  onPress={() => handleDeptChange(item.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
-      ) : (
-        <FlatList
-          data={filteredReports}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          renderItem={({ item }) => (
-            <ReportListItem
-              report={item}
-              onPress={() => navigation.navigate('ReportDetail', { reportId: item.id })}
+      </Animated.View>
+
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: listY }], flex: 1 }}>
+        <Animated.View style={{ opacity: listOpacity, transform: [{ scale: listScale }], flex: 1, backgroundColor: 'transparent' }}>
+          {loading ? (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={Colors.primaryBlue} />
+            </View>
+          ) : filteredReports.length === 0 ? (
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>No reports found matching your parameters.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredReports}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              renderItem={({ item }) => (
+                <ReportListItem
+                  report={item}
+                  onPress={() => navigation.navigate('ReportDetail', { reportId: item.id })}
+                />
+              )}
             />
           )}
-        />
-      )}
+        </Animated.View>
+      </Animated.View>
     </SafeAreaView>
   );
 };

@@ -1,7 +1,7 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useRef, useEffect } from 'react';
+import { createBottomTabNavigator, BottomTabBar } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Animated } from 'react-native';
 import { LayoutDashboard, Map, FileSpreadsheet, BarChart2 } from 'lucide-react-native';
 import { AdminTabParamList, ReportsStackParamList } from '../types/navigation.types';
 import { AdminDashboardScreen } from '../screens/admin/dashboard/AdminDashboardScreen';
@@ -12,6 +12,8 @@ import { UploadResolutionScreen } from '../screens/admin/resolution/UploadResolu
 import { AnalyticsScreen } from '../screens/admin/analytics/AnalyticsScreen';
 import { Colors } from '../constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AnimatedTabScreen } from '../components/common/AnimatedTabScreen';
+import { useSettingsStore } from '../context/useSettingsStore';
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 const ReportsStack = createNativeStackNavigator<ReportsStackParamList>();
@@ -32,9 +34,75 @@ const AdminReportsStackNavigator = () => {
   );
 };
 
+const AnimatedDashboard = () => (
+  <AnimatedTabScreen>
+    <AdminDashboardScreen />
+  </AnimatedTabScreen>
+);
+
+const AnimatedLiveMap = () => (
+  <AnimatedTabScreen>
+    <LiveMapScreen />
+  </AnimatedTabScreen>
+);
+
+const AnimatedReports = () => (
+  <AnimatedTabScreen>
+    <AdminReportsStackNavigator />
+  </AnimatedTabScreen>
+);
+
+const AnimatedAnalytics = () => (
+  <AnimatedTabScreen>
+    <AnalyticsScreen />
+  </AnimatedTabScreen>
+);
+
+const AnimatedTabBar = (props: any) => {
+  const tabBarVisible = useSettingsStore((s) => s.tabBarVisible);
+  const tabBarAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(tabBarAnim, {
+      toValue: tabBarVisible ? 1 : 0,
+      tension: 45,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, [tabBarVisible]);
+
+  const scale = tabBarAnim;
+  const translateY = tabBarAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [45, 0],
+  });
+  const opacity = tabBarAnim.interpolate({
+    inputRange: [0, 0.35, 1],
+    outputRange: [0, 0.1, 1],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        transform: [{ translateY }, { scale }],
+        opacity,
+        zIndex: 99,
+        backgroundColor: 'transparent',
+      }}
+    >
+      <BottomTabBar {...props} />
+    </Animated.View>
+  );
+};
+
 export const AdminNavigator = () => {
   return (
     <Tab.Navigator
+      tabBar={(props) => <AnimatedTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: Colors.primaryBlue,
@@ -75,7 +143,7 @@ export const AdminNavigator = () => {
     >
       <Tab.Screen
         name="Dashboard"
-        component={AdminDashboardScreen}
+        component={AnimatedDashboard}
         options={{
           tabBarLabel: 'Dashboard',
           tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />,
@@ -83,7 +151,7 @@ export const AdminNavigator = () => {
       />
       <Tab.Screen
         name="Map"
-        component={LiveMapScreen}
+        component={AnimatedLiveMap}
         options={{
           tabBarLabel: 'Live Map',
           tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
@@ -91,7 +159,7 @@ export const AdminNavigator = () => {
       />
       <Tab.Screen
         name="Reports"
-        component={AdminReportsStackNavigator}
+        component={AnimatedReports}
         options={{
           tabBarLabel: 'Reports',
           tabBarIcon: ({ color, size }) => <FileSpreadsheet color={color} size={size} />,
@@ -99,7 +167,7 @@ export const AdminNavigator = () => {
       />
       <Tab.Screen
         name="Analytics"
-        component={AnalyticsScreen}
+        component={AnimatedAnalytics}
         options={{
           tabBarLabel: 'Analytics',
           tabBarIcon: ({ color, size }) => <BarChart2 color={color} size={size} />,
@@ -108,3 +176,4 @@ export const AdminNavigator = () => {
     </Tab.Navigator>
   );
 };
+

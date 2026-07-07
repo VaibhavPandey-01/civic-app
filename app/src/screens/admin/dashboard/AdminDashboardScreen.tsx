@@ -24,6 +24,8 @@ import { AnalyticsCard } from '../../../components/admin/AnalyticsCard';
 import { ReportListItem } from '../../../components/admin/ReportListItem';
 import { Report } from '../../../types/report.types';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from '../../../hooks/useTranslation';
+import { BlurView } from 'expo-blur';
 
 type NavigationProp = NativeStackNavigationProp<any>;
 
@@ -31,6 +33,7 @@ export const AdminDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore((s) => s.user);
   const { language, setLanguage } = useSettingsStore();
+  const { t } = useTranslation();
 
   const [stats, setStats] = useState({
     total: 0,
@@ -48,12 +51,62 @@ export const AdminDashboardScreen: React.FC = () => {
   const mapScale = useRef(new Animated.Value(0.95)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const waveAnim = useRef(new Animated.Value(0)).current;
+  const listScale = useRef(new Animated.Value(1)).current;
+  const listOpacity = useRef(new Animated.Value(1)).current;
+  const statsScale = useRef(new Animated.Value(1)).current;
+  const statsOpacity = useRef(new Animated.Value(1)).current;
+  const modalAnim = useRef(new Animated.Value(0)).current;
+
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const showProfile = () => {
+    setProfileVisible(true);
+    modalAnim.setValue(0);
+    Animated.spring(modalAnim, {
+      toValue: 1,
+      tension: 65,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const hideProfile = () => {
+    Animated.timing(modalAnim, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(() => {
+      setProfileVisible(false);
+    });
+  };
 
   const runEntranceAnimation = () => {
     fadeAnim.setValue(0);
     statsY.setValue(20);
     listY.setValue(20);
     mapScale.setValue(0.95);
+    listScale.setValue(1);
+    listOpacity.setValue(1);
+    statsScale.setValue(1);
+    statsOpacity.setValue(1);
 
     Animated.stagger(100, [
       Animated.parallel([
@@ -111,6 +164,61 @@ export const AdminDashboardScreen: React.FC = () => {
         useNativeDriver: true,
       })
     ).start();
+  };
+
+  const handleRefresh = () => {
+    Animated.parallel([
+      Animated.timing(listScale, {
+        toValue: 0.85,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(listOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(statsScale, {
+        toValue: 0.85,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(statsOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      })
+    ]).start(async () => {
+      await loadDashboardData();
+      Animated.stagger(100, [
+        Animated.parallel([
+          Animated.spring(statsScale, {
+            toValue: 1,
+            tension: 85,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.timing(statsOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          })
+        ]),
+        Animated.parallel([
+          Animated.spring(listScale, {
+            toValue: 1,
+            tension: 85,
+            friction: 6,
+            useNativeDriver: true,
+          }),
+          Animated.timing(listOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          })
+        ])
+      ]).start();
+    });
   };
 
   const loadDashboardData = async () => {
@@ -189,15 +297,15 @@ export const AdminDashboardScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
 
         <Animated.View style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: statsY }] }]}>
           <View style={{ flex: 1, marginRight: Colors.spacing.sm }}>
-            <Text style={styles.greeting}>Authority Hub</Text>
-            <Text style={styles.adminName}>Welcome, {user?.name || 'Officer'}</Text>
+            <Text style={styles.greeting}>{t('authorityHub')}</Text>
+            <Text style={styles.adminName}>{t('welcomeOfficer')}{user?.name || 'Officer'}</Text>
           </View>
           <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.profileBtn} onPress={() => setProfileVisible(true)} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.profileBtn} onPress={showProfile} activeOpacity={0.8}>
               <User size={20} color={Colors.primaryBlue} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
@@ -248,9 +356,9 @@ export const AdminDashboardScreen: React.FC = () => {
               >
                 <Map size={24} color={Colors.white} />
                 <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0)', borderWidth: 0 }}>
-                  <Text style={styles.mapCtaTitle}>Incident Live Map</Text>
+                  <Text style={styles.mapCtaTitle}>{t('incidentLiveMap')}</Text>
                   <Text style={styles.mapCtaSub} numberOfLines={2}>
-                    View reported issues coordinates on dynamic map view
+                    {t('liveMapDesc')}
                   </Text>
                 </View>
               </View>
@@ -259,78 +367,82 @@ export const AdminDashboardScreen: React.FC = () => {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: statsY }] }}>
-          <Text style={styles.sectionTitle}>Overview Analytics</Text>
-          {loading ? (
-            <ActivityIndicator size="small" color={Colors.primaryBlue} style={styles.loader} />
-          ) : (
-            <View style={styles.statsContainer}>
-              <View style={styles.statsRow}>
-                <AnalyticsCard
-                  count={stats.total}
-                  label="Total Reports"
-                  iconName="BarChart2"
-                  iconColor={Colors.primaryBlue}
-                  bgColor="#EFF6FF"
-                />
-                <AnalyticsCard
-                  count={stats.pending}
-                  label="Pending Issues"
-                  iconName="ShieldAlert"
-                  iconColor={Colors.alertOrange}
-                  bgColor="#FFF7ED"
-                />
+          <Text style={styles.sectionTitle}>{t('overviewAnalytics')}</Text>
+          <Animated.View style={{ opacity: statsOpacity, transform: [{ scale: statsScale }], backgroundColor: 'transparent' }}>
+            {loading ? (
+              <ActivityIndicator size="small" color={Colors.primaryBlue} style={styles.loader} />
+            ) : (
+              <View style={styles.statsContainer}>
+                <View style={styles.statsRow}>
+                  <AnalyticsCard
+                    count={stats.total}
+                    label={t('totalReports')}
+                    iconName="BarChart2"
+                    iconColor={Colors.primaryBlue}
+                    bgColor="#EFF6FF"
+                  />
+                  <AnalyticsCard
+                    count={stats.pending}
+                    label={t('pendingIssues')}
+                    iconName="ShieldAlert"
+                    iconColor={Colors.alertOrange}
+                    bgColor="#FFF7ED"
+                  />
+                </View>
+                <View style={styles.statsRow}>
+                  <AnalyticsCard
+                    count={stats.resolved}
+                    label={t('resolvedCases')}
+                    iconName="CheckCircle"
+                    iconColor={Colors.environmentalGreen}
+                    bgColor="#F0FDF4"
+                  />
+                  <AnalyticsCard
+                    count={stats.highPriority}
+                    label={t('safetyEmergencies')}
+                    iconName="ShieldAlert"
+                    iconColor={Colors.alertOrange}
+                    bgColor="#FFFBEB"
+                  />
+                </View>
               </View>
-              <View style={styles.statsRow}>
-                <AnalyticsCard
-                  count={stats.resolved}
-                  label="Resolved Cases"
-                  iconName="CheckCircle"
-                  iconColor={Colors.environmentalGreen}
-                  bgColor="#F0FDF4"
-                />
-                <AnalyticsCard
-                  count={stats.highPriority}
-                  label="Safety Emergencies"
-                  iconName="ShieldAlert"
-                  iconColor={Colors.alertOrange}
-                  bgColor="#FFFBEB"
-                />
-              </View>
-            </View>
-          )}
+            )}
+          </Animated.View>
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: listY }] }}>
           <View style={styles.reportsHeader}>
-            <Text style={styles.sectionTitle}>Recent Incidents</Text>
-            <TouchableOpacity onPress={loadDashboardData} style={styles.refreshBtn}>
+            <Text style={styles.sectionTitle}>{t('recentIncidents')}</Text>
+            <TouchableOpacity onPress={handleRefresh} style={styles.refreshBtn}>
               <RefreshCw size={14} color={Colors.primaryBlue} />
-              <Text style={styles.refreshText}>Refresh</Text>
+              <Text style={styles.refreshText}>{t('refresh')}</Text>
             </TouchableOpacity>
           </View>
 
-          {loading ? (
-            <ActivityIndicator size="small" color={Colors.primaryBlue} style={styles.loader} />
-          ) : recentReports.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>No reports require attention right now.</Text>
-            </View>
-          ) : (
-            <View style={styles.reportsList}>
-              {recentReports.map((report) => (
-                <ReportListItem
-                  key={report.id}
-                  report={report}
-                  onPress={() =>
-                    navigation.navigate('Reports', {
-                      screen: 'ReportDetail',
-                      params: { reportId: report.id },
-                    })
-                  }
-                />
-              ))}
-            </View>
-          )}
+          <Animated.View style={{ opacity: listOpacity, transform: [{ scale: listScale }], backgroundColor: 'transparent' }}>
+            {loading ? (
+              <ActivityIndicator size="small" color={Colors.primaryBlue} style={styles.loader} />
+            ) : recentReports.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyText}>No reports require attention right now.</Text>
+              </View>
+            ) : (
+              <View style={styles.reportsList}>
+                {recentReports.map((report) => (
+                  <ReportListItem
+                    key={report.id}
+                    report={report}
+                    onPress={() =>
+                      navigation.navigate('Reports', {
+                        screen: 'ReportDetail',
+                        params: { reportId: report.id },
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            )}
+          </Animated.View>
         </Animated.View>
 
       </ScrollView>
@@ -338,18 +450,39 @@ export const AdminDashboardScreen: React.FC = () => {
       <Modal
         visible={profileVisible}
         transparent={true}
-        animationType="fade"
-        onRequestClose={() => setProfileVisible(false)}
+        animationType="none"
+        statusBarTranslucent={true}
+        onRequestClose={hideProfile}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setProfileVisible(false)}
+          onPress={hideProfile}
         >
-          <View style={styles.modalCard} onStartShouldSetResponder={() => true}>
+          <Animated.View style={[StyleSheet.absoluteFill, { opacity: modalAnim }]}>
+            <BlurView
+              style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.28)' }]}
+              intensity={35}
+              tint="dark"
+              experimentalBlurMethod={"regular" as any}
+            />
+          </Animated.View>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              {
+                opacity: modalAnim,
+                transform: [
+                  { scale: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [0.93, 1] }) },
+                  { translateY: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [25, 0] }) }
+                ]
+              }
+            ]}
+            onStartShouldSetResponder={() => true}
+          >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Officer Profile</Text>
-              <TouchableOpacity onPress={() => setProfileVisible(false)}>
+              <Text style={styles.modalTitle}>{t('officerProfile')}</Text>
+              <TouchableOpacity onPress={hideProfile}>
                 <X size={20} color={Colors.grayText} />
               </TouchableOpacity>
             </View>
@@ -379,7 +512,7 @@ export const AdminDashboardScreen: React.FC = () => {
             <View style={styles.infoDivider} />
 
             <View style={styles.settingsSection}>
-              <Text style={styles.settingsTitle}>App Language / भाषा</Text>
+              <Text style={styles.settingsTitle}>{t('appLanguage')}</Text>
               <View style={styles.languageToggleContainer}>
                 <TouchableOpacity
                   style={[styles.langBtn, language === 'en' ? styles.langBtnActive : null]}
@@ -399,15 +532,15 @@ export const AdminDashboardScreen: React.FC = () => {
             <TouchableOpacity
               style={styles.modalLogoutBtn}
               onPress={() => {
-                setProfileVisible(false);
+                hideProfile();
                 handleLogout();
               }}
               activeOpacity={0.8}
             >
               <LogOut size={16} color={Colors.white} style={{ marginRight: 8 }} />
-              <Text style={styles.modalLogoutText}>Log Out</Text>
+              <Text style={styles.modalLogoutText}>{t('logOutBtn')}</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
@@ -561,7 +694,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.40)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     padding: Colors.spacing.lg,

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { Typography } from '../../../constants/typography';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { Card } from '../../../components/common/Card';
 import { ProfileStackParamList } from '../../../types/navigation.types';
+import { useSettingsStore } from '../../../context/useSettingsStore';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileHome'>;
 
@@ -19,10 +20,73 @@ export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
 
+  const lastScrollY = useRef(0);
+  const setTabBarVisible = useSettingsStore((s) => s.setTabBarVisible);
+
+  useEffect(() => {
+    setTabBarVisible(true);
+    return () => setTabBarVisible(true);
+  }, []);
+
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (Math.abs(currentOffset - lastScrollY.current) > 15) {
+      if (currentOffset > lastScrollY.current && currentOffset > 60) {
+        setTabBarVisible(false);
+      } else {
+        setTabBarVisible(true);
+      }
+      lastScrollY.current = currentOffset;
+    }
+  };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const headerY = useRef(new Animated.Value(-15)).current;
+  const userCardY = useRef(new Animated.Value(15)).current;
+  const menuCardY = useRef(new Animated.Value(20)).current;
+
+  const runEntranceAnimation = () => {
+    fadeAnim.setValue(0);
+    headerY.setValue(-15);
+    userCardY.setValue(15);
+    menuCardY.setValue(20);
+
+    Animated.stagger(80, [
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.spring(headerY, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(userCardY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.spring(menuCardY, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  useEffect(() => {
+    runEntranceAnimation();
+  }, []);
+
   const handleLogout = async () => {
     try {
       await logout();
-
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -32,77 +96,82 @@ export const ProfileScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      {}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
-      </View>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{t('profileTitle')}</Text>
+        </View>
+      </Animated.View>
 
-      <View style={styles.content}>
-        {}
-        <Card style={styles.userCard}>
-          <View style={styles.avatarRow}>
-            <View style={styles.avatar}>
-              <UserIcon size={32} color={Colors.primaryBlue} />
-            </View>
-            <View style={styles.userInfo}>
-              <Text style={styles.name}>{user?.name || 'Citizen'}</Text>
-              <Text style={styles.phone}>{user?.phone}</Text>
-            </View>
-            {user?.verificationStatus === 'verified' && (
-              <View style={styles.badge}>
-                <CheckCircle2 size={16} color={Colors.environmentalGreen} />
-                <Text style={styles.badgeText}>Verified</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
+        
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: userCardY }] }}>
+          <Card style={styles.userCard}>
+            <View style={styles.avatarRow}>
+              <View style={styles.avatar}>
+                <UserIcon size={32} color={Colors.primaryBlue} />
               </View>
-            )}
-          </View>
-
-          {user?.email ? (
-            <View style={styles.emailContainer}>
-              <Text style={styles.emailLabel}>Email Address</Text>
-              <Text style={styles.emailValue}>{user.email}</Text>
-            </View>
-          ) : null}
-
-          <View style={styles.metaContainer}>
-            <Text style={styles.metaText}>
-              Joined on: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-            </Text>
-          </View>
-        </Card>
-
-        {}
-        <Card style={styles.menuCard}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Settings')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.menuLeft}>
-              <View style={[styles.iconCircle, { backgroundColor: Colors.primaryBlue + '15' }]}>
-                <Settings size={18} color={Colors.primaryBlue} />
+              <View style={styles.userInfo}>
+                <Text style={styles.name}>{user?.name || 'Citizen'}</Text>
+                <Text style={styles.phone}>{user?.phone}</Text>
               </View>
-              <Text style={styles.menuLabel}>{t('settingsTab')}</Text>
+              {user?.verificationStatus === 'verified' && (
+                <View style={styles.badge}>
+                  <CheckCircle2 size={16} color={Colors.environmentalGreen} />
+                  <Text style={styles.badgeText}>Verified</Text>
+                </View>
+              )}
             </View>
-            <ChevronRight size={18} color={Colors.grayText} />
-          </TouchableOpacity>
 
-          <View style={styles.divider} />
-
-          <TouchableOpacity
-            style={[styles.menuItem, styles.logoutItem]}
-            onPress={handleLogout}
-            activeOpacity={0.8}
-          >
-            <View style={styles.menuLeft}>
-              <View style={[styles.iconCircle, { backgroundColor: Colors.alertOrange + '15' }]}>
-                <LogOut size={18} color={Colors.alertOrange} />
+            {user?.email ? (
+              <View style={styles.emailContainer}>
+                <Text style={styles.emailLabel}>Email Address</Text>
+                <Text style={styles.emailValue}>{user.email}</Text>
               </View>
-              <Text style={[styles.menuLabel, styles.logoutLabel]}>{t('logOutBtn')}</Text>
+            ) : null}
+
+            <View style={styles.metaContainer}>
+              <Text style={styles.metaText}>
+                Joined on: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+              </Text>
             </View>
-            <ChevronRight size={18} color={Colors.grayText} />
-          </TouchableOpacity>
-        </Card>
-      </View>
+          </Card>
+        </Animated.View>
+
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: menuCardY }] }}>
+          <Card style={styles.menuCard}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('Settings')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.menuLeft}>
+                <View style={[styles.iconCircle, { backgroundColor: Colors.primaryBlue + '15' }]}>
+                  <Settings size={18} color={Colors.primaryBlue} />
+                </View>
+                <Text style={styles.menuLabel}>{t('settingsTab')}</Text>
+              </View>
+              <ChevronRight size={18} color={Colors.grayText} />
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
+            <TouchableOpacity
+              style={[styles.menuItem, styles.logoutItem]}
+              onPress={handleLogout}
+              activeOpacity={0.8}
+            >
+              <View style={styles.menuLeft}>
+                <View style={[styles.iconCircle, { backgroundColor: Colors.alertOrange + '15' }]}>
+                  <LogOut size={18} color={Colors.alertOrange} />
+                </View>
+                <Text style={[styles.menuLabel, styles.logoutLabel]}>{t('logOutBtn')}</Text>
+              </View>
+              <ChevronRight size={18} color={Colors.grayText} />
+            </TouchableOpacity>
+          </Card>
+        </Animated.View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -127,6 +196,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: Colors.spacing.md,
+    paddingBottom: 110,
     gap: Colors.spacing.md,
   },
   userCard: {

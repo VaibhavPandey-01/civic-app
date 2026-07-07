@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, Text, View, Image, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { TouchableOpacity, Text, View, Image, StyleSheet, Animated } from 'react-native';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Report, ReportStatus } from '../../types/report.types';
@@ -31,38 +31,65 @@ export const RecentReportCard: React.FC<RecentReportCardProps> = ({ report, onPr
   const categoryItem = CATEGORIES.find((c) => c.id === report.category);
   const statusStyles = getStatusStyles(report.status);
 
-  // format date helper
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      tension: 100,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      tension: 100,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const formattedDate = new Date(report.createdAt).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
   });
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      <Image source={{ uri: report.imageURL }} style={styles.thumbnail} />
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.category} numberOfLines={1}>
-            {categoryItem ? categoryItem.label : report.category}
-          </Text>
-          <Text style={styles.date}>{formattedDate}</Text>
-        </View>
-
-        {report.description ? (
-          <Text style={styles.description} numberOfLines={1}>
-            {report.description}
-          </Text>
-        ) : null}
-
-        <View style={styles.footer}>
-          <View style={[styles.badge, { backgroundColor: statusStyles.bg }]}>
-            <Text style={[styles.badgeText, { color: statusStyles.color }]}>
-              {statusStyles.label}
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
+        <Image source={{ uri: report.imageURL }} style={styles.thumbnail} />
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.category} numberOfLines={1}>
+              {categoryItem ? categoryItem.label : report.category}
             </Text>
+            <Text style={styles.date}>{formattedDate}</Text>
+          </View>
+
+          {report.description ? (
+            <Text style={styles.description} numberOfLines={1}>
+              {report.description}
+            </Text>
+          ) : null}
+
+          <View style={styles.footer}>
+            <View style={[styles.badge, { backgroundColor: statusStyles.bg }]}>
+              <Text style={[styles.badgeText, { color: statusStyles.color }]}>
+                {statusStyles.label}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

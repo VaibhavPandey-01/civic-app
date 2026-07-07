@@ -11,11 +11,15 @@ interface CategoryTileProps {
 }
 
 export const CategoryTile: React.FC<CategoryTileProps> = ({ category, onPress }) => {
-
   const IconComponent = (LucideIcons as any)[category.iconName] || LucideIcons.HelpCircle;
+  const brColor = `${category.color}35`;
 
   return (
-    <TouchableOpacity style={styles.tile} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[styles.tile, { borderBottomColor: brColor, borderRightColor: brColor }]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
       <View style={[styles.iconContainer, { backgroundColor: `${category.color}15` }]}>
         <IconComponent size={24} color={category.color} />
       </View>
@@ -28,15 +32,25 @@ export const CategoryTile: React.FC<CategoryTileProps> = ({ category, onPress })
 
 const styles = StyleSheet.create({
   tile: {
-    flex: 1,
+    width: '47%',
     backgroundColor: Colors.white,
-    borderRadius: Colors.radius.md,
+    borderRadius: 16,
     padding: Colors.spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
     aspectRatio: 1,
     margin: Colors.spacing.xs,
-    ...Colors.shadow.soft,
+    borderTopWidth: 2.5,
+    borderLeftWidth: 2.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 2.5,
+    borderRightWidth: 2.5,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 2,
   },
   iconContainer: {
     width: 48,
@@ -47,9 +61,10 @@ const styles = StyleSheet.create({
     marginBottom: Colors.spacing.xs,
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.darkText,
     textAlign: 'center',
+    marginTop: 4,
   },
 });
