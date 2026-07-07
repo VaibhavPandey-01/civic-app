@@ -250,12 +250,9 @@ export const CitizenDashboardScreen: React.FC = () => {
 
   const handleNotificationPress = (reportId: string) => {
     hideNotifications();
-    navigation.navigate('CitizenTabs' as any, {
-      screen: 'Reports',
-      params: {
-        screen: 'ReportDetail',
-        params: { reportId },
-      },
+    navigation.navigate('Reports' as any, {
+      screen: 'ReportDetail',
+      params: { reportId },
     } as any);
   };
 
@@ -384,11 +381,10 @@ export const CitizenDashboardScreen: React.FC = () => {
   const safetyCategories = CATEGORIES.filter((c) => c.group === 'safety');
 
   const startReport = (category?: string) => {
-    // navigate to nested reportstack
     if (category) {
       navigation.navigate('ReportStack' as any, {
         screen: 'Camera',
-        params: { category: category as any },
+        params: { category: category as any, fromDashboard: true },
       } as any);
     } else {
       navigation.navigate('ReportStack' as any, {
@@ -435,9 +431,6 @@ export const CitizenDashboardScreen: React.FC = () => {
                 <Bell size={20} color={Colors.primaryBlue} />
                 {hasUnseenNotifications && <View style={styles.badgeDot} />}
               </TouchableOpacity>
-              <View style={styles.avatar}>
-                <UserIcon size={20} color={Colors.primaryBlue} />
-              </View>
             </View>
           </View>
         </Animated.View>
@@ -517,12 +510,9 @@ export const CitizenDashboardScreen: React.FC = () => {
                   <RecentReportCard
                     report={report}
                     onPress={() => {
-                      navigation.navigate('CitizenTabs' as any, {
-                        screen: 'Reports',
-                        params: {
-                          screen: 'ReportDetail',
-                          params: { reportId: report.id },
-                        },
+                      navigation.navigate('Reports' as any, {
+                        screen: 'ReportDetail',
+                        params: { reportId: report.id },
                       } as any);
                     }}
                   />

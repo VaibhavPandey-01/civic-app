@@ -16,7 +16,7 @@ export type AuthStackParamList = {
 
 export type ReportStackParamList = {
   SelectCategory: undefined;
-  Camera: { category: ReportCategoryType };
+  Camera: { category: ReportCategoryType; fromDashboard?: boolean };
   Description: {
     category: ReportCategoryType;
     imageUri: string;

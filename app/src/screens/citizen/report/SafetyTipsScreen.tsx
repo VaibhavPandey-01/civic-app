@@ -27,7 +27,7 @@ export const SafetyTipsScreen: React.FC = () => {
   const { category } = route.params;
 
   const handleDone = () => {
-    navigation.getParent()?.navigate('CitizenTabs');
+    navigation.getParent()?.navigate('Home');
   };
 
   return (

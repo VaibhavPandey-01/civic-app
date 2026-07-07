@@ -23,7 +23,17 @@ type ScreenRouteProp = RouteProp<ReportStackParamList, 'Camera'>;
 export const CameraScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ScreenRouteProp>();
-  const { category } = route.params;
+  const { category, fromDashboard } = route.params || {};
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (fromDashboard && e.data.action.type === 'POP') {
+        e.preventDefault();
+        navigation.getParent()?.navigate('Home');
+      }
+    });
+    return unsubscribe;
+  }, [navigation, fromDashboard]);
 
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
@@ -104,7 +114,7 @@ export const CameraScreen: React.FC = () => {
         <SafeAreaView style={styles.overlay}>
           {}
           <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={() => navigation.getParent()?.navigate('CitizenTabs')}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => navigation.getParent()?.navigate('Home')}>
               <X size={24} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.title}>Align Incident Photo</Text>

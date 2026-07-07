@@ -92,7 +92,7 @@ export const SelectCategoryScreen: React.FC = () => {
       
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.getParent()?.navigate('CitizenTabs')}>
+          <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.getParent()?.navigate('Home')}>
             <X size={20} color={Colors.darkText} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('selectCategoryTitle')}</Text>
