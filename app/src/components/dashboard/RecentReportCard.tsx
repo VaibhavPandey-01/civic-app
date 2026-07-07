@@ -4,32 +4,72 @@ import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Report, ReportStatus } from '../../types/report.types';
 import { CATEGORIES } from '../../constants/categories';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface RecentReportCardProps {
   report: Report;
   onPress: () => void;
 }
 
-const getStatusStyles = (status: ReportStatus) => {
-  switch (status) {
-    case 'submitted':
-      return { label: 'Submitted', color: '#6B7280', bg: '#F3F4F6' };
-    case 'under_review':
-      return { label: 'Under Review', color: Colors.primaryBlue, bg: '#EFF6FF' };
-    case 'assigned':
-      return { label: 'Assigned', color: Colors.primaryBlue, bg: '#EFF6FF' };
-    case 'action_started':
-      return { label: 'Action Started', color: Colors.alertOrange, bg: '#FFF7ED' };
-    case 'resolved':
-      return { label: 'Resolved', color: Colors.environmentalGreen, bg: '#F0FDF4' };
+const getCategoryLabelHi = (categoryId: string) => {
+  switch (categoryId) {
+    case 'garbage_dump':
+      return 'कचरा डंप';
+    case 'plastic_pollution':
+      return 'प्लास्टिक प्रदूषण';
+    case 'waste_accumulation':
+      return 'कचरा संचय';
+    case 'water_pollution':
+      return 'जल प्रदूषण';
+    case 'suspicious_object':
+      return 'संदिग्ध वस्तु';
+    case 'emergency_situation':
+      return 'आपातकालीन स्थिति';
     default:
-      return { label: status, color: '#6B7280', bg: '#F3F4F6' };
+      return categoryId;
+  }
+};
+
+const getStatusStyles = (status: ReportStatus, isHindi: boolean) => {
+  if (isHindi) {
+    switch (status) {
+      case 'submitted':
+        return { label: 'जमा की गई', color: '#6B7280', bg: '#F3F4F6' };
+      case 'under_review':
+        return { label: 'समीक्षा के अधीन', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      case 'assigned':
+        return { label: 'आवंटित', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      case 'action_started':
+        return { label: 'कार्रवाई शुरू', color: Colors.alertOrange, bg: '#FFF7ED' };
+      case 'resolved':
+        return { label: 'हल', color: Colors.environmentalGreen, bg: '#F0FDF4' };
+      default:
+        return { label: status, color: '#6B7280', bg: '#F3F4F6' };
+    }
+  } else {
+    switch (status) {
+      case 'submitted':
+        return { label: 'Submitted', color: '#6B7280', bg: '#F3F4F6' };
+      case 'under_review':
+        return { label: 'Under Review', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      case 'assigned':
+        return { label: 'Assigned', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      case 'action_started':
+        return { label: 'Action Started', color: Colors.alertOrange, bg: '#FFF7ED' };
+      case 'resolved':
+        return { label: 'Resolved', color: Colors.environmentalGreen, bg: '#F0FDF4' };
+      default:
+        return { label: status, color: '#6B7280', bg: '#F3F4F6' };
+    }
   }
 };
 
 export const RecentReportCard: React.FC<RecentReportCardProps> = ({ report, onPress }) => {
+  const { language } = useTranslation();
+  const isHindi = language === 'hi';
+
   const categoryItem = CATEGORIES.find((c) => c.id === report.category);
-  const statusStyles = getStatusStyles(report.status);
+  const statusStyles = getStatusStyles(report.status, isHindi);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -56,6 +96,10 @@ export const RecentReportCard: React.FC<RecentReportCardProps> = ({ report, onPr
     day: 'numeric',
   });
 
+  const resolvedCategoryLabel = categoryItem
+    ? (isHindi ? getCategoryLabelHi(report.category) : categoryItem.label)
+    : report.category;
+
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
@@ -69,7 +113,7 @@ export const RecentReportCard: React.FC<RecentReportCardProps> = ({ report, onPr
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.category} numberOfLines={1}>
-              {categoryItem ? categoryItem.label : report.category}
+              {resolvedCategoryLabel}
             </Text>
             <Text style={styles.date}>{formattedDate}</Text>
           </View>

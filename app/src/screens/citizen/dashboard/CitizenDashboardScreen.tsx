@@ -357,11 +357,11 @@ export const CitizenDashboardScreen: React.FC = () => {
     }
   }, [loading]);
 
-  const loadData = async () => {
+  const loadData = async (silent = false) => {
     const userId = user?.id || (user as any)?._id;
     if (!userId) return;
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const data = await getUserReports(userId, 1, 5);
       setReports(data.reports || []);
     } catch (error) {
@@ -372,10 +372,10 @@ export const CitizenDashboardScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(reports.length > 0);
 
     const unsubscribe = navigation.addListener('focus', () => {
-      loadData();
+      loadData(true);
     });
     return unsubscribe;
   }, [navigation, user]);
@@ -464,7 +464,7 @@ export const CitizenDashboardScreen: React.FC = () => {
           <TouchableOpacity style={[styles.ctaCard, { marginBottom: 0 }]} onPress={() => startReport()} activeOpacity={0.95}>
             <View style={styles.ctaTextContainer}>
               <Text style={styles.ctaTitle}>{t('reportAnIncident')}</Text>
-              <Text style={styles.ctaSubtitle}>Report emergencies, pollution, or trash instantly.</Text>
+              <Text style={styles.ctaSubtitle}>{t('reportIncidentSub' as any)}</Text>
             </View>
             <View style={styles.ctaButtonCircle}>
               <Plus size={24} color={Colors.white} />
@@ -473,7 +473,7 @@ export const CitizenDashboardScreen: React.FC = () => {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid1Y }] }}>
-          <Text style={styles.sectionTitle}>Environmental Pollution</Text>
+          <Text style={styles.sectionTitle}>{t('environmentalPollution' as any)}</Text>
           <View style={styles.grid}>
             {environmentalCategories.map((cat) => (
               <CategoryTile
@@ -486,7 +486,7 @@ export const CitizenDashboardScreen: React.FC = () => {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid2Y }] }}>
-          <Text style={styles.sectionTitle}>Safety & Security</Text>
+          <Text style={styles.sectionTitle}>{t('safetySecurity' as any)}</Text>
           <View style={styles.grid}>
             {safetyCategories.map((cat) => (
               <CategoryTile
@@ -536,9 +536,9 @@ export const CitizenDashboardScreen: React.FC = () => {
               <Info size={18} color={Colors.primaryBlue} />
             </View>
             <View style={styles.tipsTeaserText}>
-              <Text style={styles.tipsTeaserTitle}>Did you know?</Text>
+              <Text style={styles.tipsTeaserTitle}>{t('didYouKnow' as any)}</Text>
               <Text style={styles.tipsTeaserDescription}>
-                Safety is our top priority. For safety incidents, keep at least 100 meters distance and alert authorities.
+                {t('safetyTipTeaser' as any)}
               </Text>
             </View>
           </View>

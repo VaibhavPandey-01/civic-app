@@ -127,7 +127,15 @@ export const TRANSLATIONS = {
     refresh: "Refresh",
     officerProfile: "Officer Profile",
     appLanguage: "App Language / भाषा",
-    notifications: "Notifications"
+    notifications: "Notifications",
+    reportIncidentSub: "Report emergencies, pollution, or trash instantly.",
+    environmentalPollution: "Environmental Pollution",
+    safetySecurity: "Safety & Security",
+    didYouKnow: "Did you know?",
+    safetyTipTeaser: "Safety is our top priority. For safety incidents, keep at least 100 meters distance and alert authorities.",
+    tabHome: "Home",
+    tabReports: "My Reports",
+    tabProfile: "Profile"
   },
   hi: {
     // general  common
@@ -257,6 +265,14 @@ export const TRANSLATIONS = {
     refresh: "ताज़ा करें",
     officerProfile: "अधिकारी प्रोफ़ाइल",
     appLanguage: "App Language / Language",
-    notifications: "सूचनाएं"
+    notifications: "सूचनाएं",
+    reportIncidentSub: "आपातकाल, प्रदूषण या कचरे की तुरंत रिपोर्ट करें।",
+    environmentalPollution: "पर्यावरण प्रदूषण",
+    safetySecurity: "सुरक्षा और संरक्षा",
+    didYouKnow: "क्या आप जानते हैं?",
+    safetyTipTeaser: "सुरक्षा हमारी सर्वोच्च प्राथमिकता है। सुरक्षा घटनाओं के लिए, कम से कम 100 मीटर की दूरी बनाए रखें और अधिकारियों को सतर्क करें।",
+    tabHome: "मुख्य पृष्ठ",
+    tabReports: "मेरी रिपोर्ट",
+    tabProfile: "प्रोफ़ाइल"
   }
 };

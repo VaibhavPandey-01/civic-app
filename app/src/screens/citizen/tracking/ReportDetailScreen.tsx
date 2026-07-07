@@ -5,7 +5,6 @@ import {
   Image,
   ScrollView,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   TouchableOpacity,
@@ -14,6 +13,7 @@ import {
   Platform,
   Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowLeft, Star, MapPin, Calendar, ClipboardList } from 'lucide-react-native';
@@ -34,10 +34,30 @@ import { useSettingsStore } from '../../../context/useSettingsStore';
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'ReportDetail'>;
 type ScreenRouteProp = RouteProp<ReportsStackParamList, 'ReportDetail'>;
 
+const getCategoryLabelHi = (categoryId: string) => {
+  switch (categoryId) {
+    case 'garbage_dump':
+      return 'कचरा डंप';
+    case 'plastic_pollution':
+      return 'प्लास्टिक प्रदूषण';
+    case 'waste_accumulation':
+      return 'कचरा संचय';
+    case 'water_pollution':
+      return 'जल प्रदूषण';
+    case 'suspicious_object':
+      return 'संदिग्ध वस्तु';
+    case 'emergency_situation':
+      return 'आपातकालीन स्थिति';
+    default:
+      return categoryId;
+  }
+};
+
 export const ReportDetailScreen: React.FC = () => {
   const route = useRoute<ScreenRouteProp>();
   const navigation = useNavigation<NavigationProp>();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
   const { reportId } = route.params;
 
   const [report, setReport] = useState<Report | null>(null);
@@ -172,7 +192,7 @@ export const ReportDetailScreen: React.FC = () => {
           <ArrowLeft size={20} color={Colors.darkText} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Report: {categoryItem?.label || report.category}
+          {isHindi ? 'रिपोर्ट: ' : 'Report: '}{categoryItem ? (isHindi ? getCategoryLabelHi(report.category) : categoryItem.label) : report.category}
         </Text>
         <View style={styles.placeholder} />
       </View>
@@ -228,19 +248,19 @@ export const ReportDetailScreen: React.FC = () => {
             <View style={styles.metaRow}>
               <ClipboardList size={16} color={Colors.grayText} />
               <Text style={styles.metaText}>
-                Category: {categoryItem?.label || report.category}
+                {isHindi ? 'श्रेणी: ' : 'Category: '}{categoryItem ? (isHindi ? getCategoryLabelHi(report.category) : categoryItem.label) : report.category}
               </Text>
             </View>
             <View style={styles.metaRow}>
               <MapPin size={16} color={Colors.grayText} />
               <Text style={styles.metaText}>
-                GPS: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
+                {isHindi ? 'जीपीएस: ' : 'GPS: '}{report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
               </Text>
             </View>
             <View style={styles.metaRow}>
               <Calendar size={16} color={Colors.grayText} />
               <Text style={styles.metaText}>
-                Submitted on: {new Date(report.createdAt).toLocaleDateString()}
+                {isHindi ? 'जमा करने की तारीख: ' : 'Submitted on: '}{new Date(report.createdAt).toLocaleDateString()}
               </Text>
             </View>
             {report.description ? (

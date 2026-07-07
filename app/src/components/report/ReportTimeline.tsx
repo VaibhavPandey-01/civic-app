@@ -4,18 +4,20 @@ import { Check } from 'lucide-react-native';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { ReportStatus } from '../../types/report.types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface TimelineStep {
   status: ReportStatus;
   label: string;
+  labelHi: string;
 }
 
 const STEPS: TimelineStep[] = [
-  { status: 'submitted', label: 'Submitted' },
-  { status: 'under_review', label: 'Under Review' },
-  { status: 'assigned', label: 'Assigned' },
-  { status: 'action_started', label: 'Action Started' },
-  { status: 'resolved', label: 'Resolved' },
+  { status: 'submitted', label: 'Submitted', labelHi: 'जमा की गई' },
+  { status: 'under_review', label: 'Under Review', labelHi: 'समीक्षा के अधीन' },
+  { status: 'assigned', label: 'Assigned', labelHi: 'आवंटित' },
+  { status: 'action_started', label: 'Action Started', labelHi: 'कार्रवाई शुरू' },
+  { status: 'resolved', label: 'Resolved', labelHi: 'हल' },
 ];
 
 interface ReportTimelineProps {
@@ -24,6 +26,8 @@ interface ReportTimelineProps {
 }
 
 export const ReportTimeline: React.FC<ReportTimelineProps> = ({ currentStatus, historyLogs = [] }) => {
+  const { language } = useTranslation();
+  const isHindi = language === 'hi';
   const currentIndex = STEPS.findIndex((s) => s.status === currentStatus);
 
   return (
@@ -84,7 +88,7 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ currentStatus, h
                     isFuture ? styles.labelFuture : null,
                   ]}
                 >
-                  {step.label}
+                  {isHindi ? step.labelHi : step.label}
                 </Text>
                 {logDate ? <Text style={styles.logDate}>{logDate}</Text> : null}
               </View>
@@ -94,7 +98,9 @@ export const ReportTimeline: React.FC<ReportTimelineProps> = ({ currentStatus, h
                   {matchedLog.remarks}
                 </Text>
               ) : isCurrent ? (
-                <Text style={styles.placeholderRemarks}>Waiting for next action...</Text>
+                <Text style={styles.placeholderRemarks}>
+                  {isHindi ? 'अगली कार्रवाई का इंतजार है...' : 'Waiting for next action...'}
+                </Text>
               ) : null}
             </View>
           </View>

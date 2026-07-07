@@ -40,8 +40,31 @@ const CHIPS: FilterChip[] = [
 
 export const ReportTrackingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
   const user = useAuthStore((s) => s.user);
+
+  const getChipLabel = (id: string, defaultLabel: string) => {
+    if (isHindi) {
+      switch (id) {
+        case 'all':
+          return 'सभी';
+        case 'submitted':
+          return 'जमा की गई';
+        case 'under_review':
+          return 'समीक्षा के अधीन';
+        case 'assigned':
+          return 'आवंटित';
+        case 'action_started':
+          return 'कार्रवाई शुरू';
+        case 'resolved':
+          return 'हल';
+        default:
+          return defaultLabel;
+      }
+    }
+    return defaultLabel;
+  };
 
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
@@ -130,7 +153,7 @@ export const ReportTrackingScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchReports();
+    fetchReports(reports.length > 0);
     const unsubscribe = navigation.addListener('focus', () => {
       fetchReports(true);
     });
@@ -177,7 +200,7 @@ export const ReportTrackingScreen: React.FC = () => {
                   activeOpacity={0.8}
                 >
                   <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                    {item.label}
+                    {getChipLabel(item.id, item.label)}
                   </Text>
                 </TouchableOpacity>
               );

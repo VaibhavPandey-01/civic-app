@@ -23,6 +23,7 @@ import { Colors } from '../constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AnimatedTabScreen } from '../components/common/AnimatedTabScreen';
 import { useSettingsStore } from '../context/useSettingsStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 const Tab = createBottomTabNavigator<CitizenTabParamList>();
 const Stack = createNativeStackNavigator<ReportStackParamList>();
@@ -137,6 +138,8 @@ const AnimatedTabBar = (props: any) => {
 };
 
 export const CitizenNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       tabBar={(props) => <AnimatedTabBar {...props} />}
@@ -182,7 +185,7 @@ export const CitizenNavigator = () => {
         name="Home"
         component={AnimatedDashboard}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: t('tabHome' as any) || 'Home',
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
         }}
       />
@@ -190,7 +193,7 @@ export const CitizenNavigator = () => {
         name="Reports"
         component={AnimatedReports}
         options={{
-          tabBarLabel: 'My Reports',
+          tabBarLabel: t('tabReports' as any) || 'My Reports',
           tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />,
         }}
       />
@@ -198,7 +201,7 @@ export const CitizenNavigator = () => {
         name="Profile"
         component={AnimatedProfile}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: t('tabProfile' as any) || 'Profile',
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />

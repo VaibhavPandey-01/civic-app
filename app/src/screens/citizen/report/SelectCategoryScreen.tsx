@@ -108,7 +108,7 @@ export const SelectCategoryScreen: React.FC = () => {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid1Y }] }}>
-          <Text style={styles.sectionTitle}>Environmental Pollution</Text>
+          <Text style={styles.sectionTitle}>{t('environmentalPollution' as any)}</Text>
           <View style={styles.grid}>
             {environmentalCategories.map((cat) => (
               <CategoryTile
@@ -121,7 +121,7 @@ export const SelectCategoryScreen: React.FC = () => {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: grid2Y }] }}>
-          <Text style={styles.sectionTitle}>Safety & Security</Text>
+          <Text style={styles.sectionTitle}>{t('safetySecurity' as any)}</Text>
           <View style={styles.grid}>
             {safetyCategories.map((cat) => (
               <CategoryTile
