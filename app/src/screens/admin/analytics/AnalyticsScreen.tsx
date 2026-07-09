@@ -25,6 +25,7 @@ import { Typography } from '../../../constants/typography';
 import { getAnalytics } from '../../../services/adminService';
 import { Card } from '../../../components/common/Card';
 import { CATEGORIES } from '../../../constants/categories';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -176,6 +177,9 @@ const AnimatedPieChart: React.FC<AnimatedPieChartProps> = ({ data, width, height
 
 export const AnalyticsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [total, setTotal] = useState(0);
@@ -281,17 +285,24 @@ export const AnalyticsScreen: React.FC = () => {
       const resolved = data.byStatus.find((s: any) => s._id === 'resolved')?.count || 0;
       setResolvedCount(resolved);
 
-      const statusData = data.byStatus.map((s: any) => ({
-        label: s._id.replace('_', ' ').toUpperCase(),
-        count: s.count,
-        rawStatus: s._id,
-      }));
+      const statusData = data.byStatus.map((s: any) => {
+        const raw = s._id;
+        const statusKey = `status${raw.charAt(0).toUpperCase() + raw.slice(1).replace(/_([a-z])/g, (g: string) => g[1].toUpperCase())}`;
+        return {
+          label: t(statusKey as any) || raw.replace('_', ' ').toUpperCase(),
+          count: s.count,
+          rawStatus: raw,
+        };
+      });
       setByStatus(statusData);
 
       const categoryData = data.byCategory.map((c: any) => {
         const cat = CATEGORIES.find((catItem) => catItem.id === c._id);
+        const categoryLabel = cat
+          ? t(cat.id as any)
+          : c._id;
         return {
-          label: cat?.label || c._id,
+          label: categoryLabel,
           count: c.count,
           color: cat?.color || Colors.primaryBlue,
         };
@@ -317,7 +328,6 @@ export const AnalyticsScreen: React.FC = () => {
   }, [loading]);
 
   const maxStatus = byStatus.reduce((max, item) => (item.count > max ? item.count : max), 0);
-  const maxCategory = byCategory.reduce((max, item) => (item.count > max ? item.count : max), 0);
 
   const getStatusColor = (rawStatus: string) => {
     switch (rawStatus) {
@@ -336,7 +346,6 @@ export const AnalyticsScreen: React.FC = () => {
     }
   };
 
-  const resolutionRate = total > 0 ? Math.round((resolvedCount / total) * 100) : 0;
   const activeTickets = total - resolvedCount;
 
   return (
@@ -345,7 +354,9 @@ export const AnalyticsScreen: React.FC = () => {
 
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>System Analytics</Text>
+          <Text style={styles.headerTitle}>
+            {t('analyticsTitle' as any) || 'Overview Analytics'}
+          </Text>
           <TouchableOpacity 
             style={styles.refreshBtn} 
             onPress={handleRefresh} 
@@ -376,7 +387,9 @@ export const AnalyticsScreen: React.FC = () => {
                     <BarChart2 size={20} color={Colors.primaryBlue} />
                   </View>
                   <AnimatedStat targetValue={total} />
-                  <Text style={styles.statLabel}>Total Load</Text>
+                  <Text style={styles.statLabel}>
+                    {t('totalReports' as any) || 'Total Reports'}
+                  </Text>
                 </Card>
 
                 <Card style={[styles.statCard, { borderLeftColor: '#F59E0B', borderLeftWidth: 4 }]}>
@@ -384,7 +397,9 @@ export const AnalyticsScreen: React.FC = () => {
                     <Clock size={20} color="#F59E0B" />
                   </View>
                   <AnimatedStat targetValue={activeTickets} />
-                  <Text style={styles.statLabel}>Active Cases</Text>
+                  <Text style={styles.statLabel}>
+                    {t('pendingIssues' as any) || 'Pending Issues'}
+                  </Text>
                 </Card>
 
                 <Card style={[styles.statCard, { borderLeftColor: '#10B981', borderLeftWidth: 4 }]}>
@@ -392,7 +407,9 @@ export const AnalyticsScreen: React.FC = () => {
                     <CheckCircle2 size={20} color="#10B981" />
                   </View>
                   <AnimatedStat targetValue={resolvedCount} />
-                  <Text style={styles.statLabel}>Resolved Cases</Text>
+                  <Text style={styles.statLabel}>
+                    {t('resolvedCases' as any) || 'Resolved Cases'}
+                  </Text>
                 </Card>
               </View>
             </Animated.View>
@@ -401,11 +418,15 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={styles.chartSection}>
                 <View style={styles.sectionHeader}>
                   <Activity size={16} color={Colors.primaryBlue} />
-                  <Text style={styles.chartTitle}>Reports by Status</Text>
+                  <Text style={styles.chartTitle}>
+                    {t('reportsByStatus' as any) || 'Reports by Status'}
+                  </Text>
                 </View>
                 <Card style={styles.chartCard}>
                   {byStatus.length === 0 ? (
-                    <Text style={styles.emptyText}>No status statistics available.</Text>
+                    <Text style={styles.emptyText}>
+                      {t('noDataAvailable' as any) || 'No statistics available.'}
+                    </Text>
                   ) : (
                     byStatus.map((item, index) => (
                       <ChartBar
@@ -426,11 +447,15 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={styles.chartSection}>
                 <View style={styles.sectionHeader}>
                   <TrendingUp size={16} color={Colors.environmentalGreen} />
-                  <Text style={styles.chartTitle}>Incidents by Category</Text>
+                  <Text style={styles.chartTitle}>
+                    {t('reportsByCategory' as any) || 'Reports by Category'}
+                  </Text>
                 </View>
                 <Card style={styles.chartCard}>
                   {byCategory.length === 0 ? (
-                    <Text style={styles.emptyText}>No category statistics available.</Text>
+                    <Text style={styles.emptyText}>
+                      {t('noDataAvailable' as any) || 'No statistics available.'}
+                    </Text>
                   ) : (
                     <AnimatedPieChart
                       data={byCategory.map((item) => ({
@@ -576,17 +601,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.darkText,
-  },
-  barPercent: {
-    fontSize: 9,
-    color: Colors.grayText,
-    fontWeight: Typography.fontWeight.semibold,
-    marginLeft: 3,
-  },
-  pieContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
   },
   emptyText: {
     fontSize: 13,

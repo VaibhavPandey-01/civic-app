@@ -14,6 +14,7 @@ import { Colors } from '../constants/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AnimatedTabScreen } from '../components/common/AnimatedTabScreen';
 import { useSettingsStore } from '../context/useSettingsStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 const ReportsStack = createNativeStackNavigator<ReportsStackParamList>();
@@ -100,6 +101,8 @@ const AnimatedTabBar = (props: any) => {
 };
 
 export const AdminNavigator = () => {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       tabBar={(props) => <AnimatedTabBar {...props} />}
@@ -145,7 +148,7 @@ export const AdminNavigator = () => {
         name="Dashboard"
         component={AnimatedDashboard}
         options={{
-          tabBarLabel: 'Dashboard',
+          tabBarLabel: t('tabDashboard' as any) || 'Dashboard',
           tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />,
         }}
       />
@@ -153,7 +156,7 @@ export const AdminNavigator = () => {
         name="Map"
         component={AnimatedLiveMap}
         options={{
-          tabBarLabel: 'Live Map',
+          tabBarLabel: t('tabLiveMap' as any) || 'Live Map',
           tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
         }}
       />
@@ -161,7 +164,7 @@ export const AdminNavigator = () => {
         name="Reports"
         component={AnimatedReports}
         options={{
-          tabBarLabel: 'Reports',
+          tabBarLabel: t('tabReportsAdmin' as any) || 'Reports',
           tabBarIcon: ({ color, size }) => <FileSpreadsheet color={color} size={size} />,
         }}
       />
@@ -169,7 +172,7 @@ export const AdminNavigator = () => {
         name="Analytics"
         component={AnimatedAnalytics}
         options={{
-          tabBarLabel: 'Analytics',
+          tabBarLabel: t('tabAnalytics' as any) || 'Analytics',
           tabBarIcon: ({ color, size }) => <BarChart2 color={color} size={size} />,
         }}
       />

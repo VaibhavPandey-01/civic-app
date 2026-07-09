@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Check } from 'lucide-react-native';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { ReportStatus } from '../../types/report.types';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { updateReportStatus } from '../../services/adminService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface StatusUpdaterProps {
   reportId: string;
@@ -16,13 +16,14 @@ interface StatusUpdaterProps {
 
 interface StatusOption {
   status: ReportStatus;
-  label: string;
+  labelEn: string;
+  labelHi: string;
 }
 
 const OPTIONS: StatusOption[] = [
-  { status: 'under_review', label: 'Review' },
-  { status: 'assigned', label: 'Assign' },
-  { status: 'action_started', label: 'Action' },
+  { status: 'under_review', labelEn: 'Review', labelHi: 'समीक्षा' },
+  { status: 'assigned', labelEn: 'Assign', labelHi: 'आवंटन' },
+  { status: 'action_started', labelEn: 'Action', labelHi: 'कार्रवाई' },
 ];
 
 export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
@@ -30,6 +31,9 @@ export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
   currentStatus,
   onStatusUpdated,
 }) => {
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
+
   const [selectedStatus, setSelectedStatus] = useState<ReportStatus>(
     OPTIONS.some((o) => o.status === currentStatus)
       ? currentStatus
@@ -42,12 +46,18 @@ export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
     setLoading(true);
     try {
       await updateReportStatus(reportId, selectedStatus, remarks.trim() || undefined);
-      Alert.alert('Status Updated', 'The report status has been updated successfully.');
+      Alert.alert(
+        t('success' as any) || 'Success',
+        t('statusUpdatedSuccess' as any) || 'Status updated successfully'
+      );
       setRemarks('');
       onStatusUpdated();
     } catch (error: any) {
       console.error('Error updating status:', error);
-      Alert.alert('Update Failed', error.message || 'An error occurred while updating status.');
+      Alert.alert(
+        t('error' as any) || 'Error',
+        error.message || 'An error occurred while updating status.'
+      );
     } finally {
       setLoading(false);
     }
@@ -55,12 +65,12 @@ export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Update Status</Text>
+      <Text style={styles.title}>{t('updateStatus' as any) || 'Update Status'}</Text>
 
-      {}
       <View style={styles.segmentContainer}>
         {OPTIONS.map((opt) => {
           const isActive = selectedStatus === opt.status;
+          const label = isHindi ? opt.labelHi : opt.labelEn;
           return (
             <TouchableOpacity
               key={opt.status}
@@ -69,17 +79,16 @@ export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
               activeOpacity={0.8}
             >
               <Text style={[styles.segmentText, isActive ? styles.segmentTextActive : null]}>
-                {opt.label}
+                {label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {}
       <Input
-        label="Operational Remarks"
-        placeholder="Add remarks (e.g. assigned team name, progress updates...)"
+        label={t('remarksLabel' as any) || 'Remarks / Comments'}
+        placeholder={t('remarksPlaceholder' as any) || 'Add any notes or context...'}
         value={remarks}
         onChangeText={setRemarks}
         multiline
@@ -88,7 +97,7 @@ export const StatusUpdater: React.FC<StatusUpdaterProps> = ({
       />
 
       <Button
-        title="Apply Changes"
+        title={isHindi ? 'बदलाव लागू करें' : 'Apply Changes'}
         onPress={handleUpdate}
         loading={loading}
         variant="primary"

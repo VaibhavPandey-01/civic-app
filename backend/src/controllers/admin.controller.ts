@@ -4,7 +4,8 @@ import mongoose from 'mongoose';
 import Report from '../models/Report.model';
 import StatusHistory from '../models/StatusHistory.model';
 import User from '../models/User.model';
-import { uploadBufferToCloudinary } from '../services/imageUploadService';
+import { uploadBufferToCloudinary, deleteImageFromCloudinary } from '../services/imageUploadService';
+import { verifyResolutionWithGemini } from '../services/geminiService';
 import { sendPushNotification } from '../services/notificationService';
 import { sendSuccess, sendError } from '../utils/responseHandler';
 import {
@@ -30,7 +31,11 @@ export const getAllReports = asyncHandler(async (req: Request, res: Response) =>
 
   // Build filter dynamically — only include keys that were actually provided
   const filter: Record<string, unknown> = {};
-  if (status) filter['status'] = status;
+  if (status) {
+    filter['status'] = status;
+  } else {
+    filter['status'] = { $ne: 'invalid' };
+  }
   if (category) filter['category'] = category;
   if (department) filter['assignedDepartment'] = department;
 
@@ -128,6 +133,34 @@ export const uploadResolution = asyncHandler(async (req: Request, res: Response)
     req.file.buffer,
     'ocean-preventions/resolutions'
   );
+
+  // Perform Gemini resolution verification if client version matches
+  const clientVersion = req.headers['x-client-version'];
+  const runAiValidation = clientVersion === '2.0.0-AI';
+
+  if (runAiValidation && report.imageURL) {
+    try {
+      const verification = await verifyResolutionWithGemini(
+        report.imageURL,
+        resolutionImage,
+        report.category
+      );
+
+      // If AI cannot verify the resolution, block the action!
+      if (!verification.isVerified) {
+        // Delete the uploaded resolution image to save space
+        await deleteImageFromCloudinary(resolutionImage);
+
+        const lang = req.body.language || 'en';
+        const reason = lang === 'hi' ? verification.reasonHindi : verification.reason;
+
+        sendError(res, `AI Resolution Verification Failed: ${reason}`, 400);
+        return;
+      }
+    } catch (err) {
+      logger.warn('AI resolution verification failed (non-blocking)', { err });
+    }
+  }
 
   report.resolutionImage = resolutionImage;
   report.resolutionNotes = parsed.data.notes;

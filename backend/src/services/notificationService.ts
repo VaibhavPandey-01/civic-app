@@ -1,34 +1,47 @@
-import { firebaseMessaging } from '../config/firebase';
 import { logger } from '../utils/logger';
 
 /**
- * Sends a push notification to a single device via Firebase Cloud Messaging.
+ * Sends a push notification to a single device via Expo Push Notifications.
  *
- * @param fcmToken  - The recipient's FCM registration token
- * @param title     - Notification title (shown in the system tray)
- * @param body      - Notification body text
- * @param data      - Optional key-value payload for in-app handling
+ * @param expoPushToken - The recipient's Expo push token
+ * @param title         - Notification title (shown in the system tray)
+ * @param body          - Notification body text
+ * @param data          - Optional key-value payload for in-app handling
  */
 export const sendPushNotification = async (
-  fcmToken: string,
+  expoPushToken: string,
   title: string,
   body: string,
   data?: Record<string, string>
 ): Promise<void> => {
-  if (!firebaseMessaging) {
-    logger.warn('Push notification skipped — Firebase Admin SDK is unconfigured.');
+  if (!expoPushToken || !expoPushToken.startsWith('ExponentPushToken')) {
+    logger.warn('Push notification skipped — Invalid Expo Push Token.');
     return;
   }
+  
   try {
-    const messageId = await firebaseMessaging.send({
-      token: fcmToken,
-      notification: { title, body },
-      data,
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: expoPushToken,
+        title,
+        body,
+        data,
+      }),
     });
-    logger.info('Push notification sent', { messageId, fcmToken: fcmToken.slice(0, 12) + '…' });
+
+    if (!response.ok) {
+      throw new Error(`Expo Push API error: ${response.status} ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    logger.info('Push notification sent', { response: responseData, expoPushToken: expoPushToken.slice(0, 30) + '…' });
   } catch (error) {
-    // Log but don't throw — a failed push should never crash the request.
-    // The caller can decide whether to retry.
-    logger.error('Push notification failed', { error, fcmToken: fcmToken.slice(0, 12) + '…' });
+    logger.error('Push notification failed', { error, expoPushToken: expoPushToken.slice(0, 30) + '…' });
   }
 };

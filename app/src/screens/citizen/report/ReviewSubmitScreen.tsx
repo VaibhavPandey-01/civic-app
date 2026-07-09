@@ -9,11 +9,13 @@ import {
   Alert,
   Platform,
   Linking,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MapPin, Calendar, Clipboard, FolderOpen } from 'lucide-react-native';
+import { MapPin, Calendar, Clipboard, FolderOpen, AlertTriangle, ArrowLeft } from 'lucide-react-native';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/typography';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -29,10 +31,12 @@ type ScreenRouteProp = RouteProp<ReportStackParamList, 'ReviewSubmit'>;
 export const ReviewSubmitScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ScreenRouteProp>();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { category, imageUri, latitude, longitude, timestamp, description } = route.params;
 
   const [submitting, setSubmitting] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const matchedCategory = CATEGORIES.find((c) => c.id === category);
 
@@ -53,6 +57,7 @@ export const ReviewSubmitScreen: React.FC = () => {
       formData.append('latitude', String(latitude));
       formData.append('longitude', String(longitude));
       formData.append('description', description);
+      formData.append('language', language);
 
       await createReport(formData);
 
@@ -63,9 +68,17 @@ export const ReviewSubmitScreen: React.FC = () => {
       }
 
       navigation.navigate('SafetyTips', { category });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting report:', error);
-      Alert.alert(t('error'), 'An error occurred while uploading your report. Please try again.');
+      const backendMsg = error?.response?.data?.message || 'An error occurred while uploading your report. Please try again.';
+      
+      if (backendMsg.includes('AI Validation Failed:')) {
+        const cleanMsg = backendMsg.replace('AI Validation Failed:', '').trim();
+        setErrorMessage(cleanMsg);
+        setShowErrorModal(true);
+      } else {
+        Alert.alert(t('error'), backendMsg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -75,9 +88,41 @@ export const ReviewSubmitScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      {}
+      <Modal
+        visible={showErrorModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowErrorModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.warningIconContainer}>
+              <AlertTriangle size={36} color="#DC2626" />
+            </View>
+            
+            <Text style={styles.modalTitle}>{t('aiValidationTitle')}</Text>
+            <Text style={styles.modalSub}>{t('aiValidationSub')}</Text>
+            
+            <View style={styles.reasonBox}>
+              <Text style={styles.reasonText}>{errorMessage}</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.modalButton} 
+              onPress={() => setShowErrorModal(false)}
+            >
+              <Text style={styles.modalButtonText}>{t('aiValidationButton')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <ArrowLeft size={20} color={Colors.darkText} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('reviewSubmitTitle')}</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -170,17 +215,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Colors.spacing.md,
     paddingVertical: Colors.spacing.md,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    alignItems: 'center',
+  },
+  backBtn: {
+    padding: 4,
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.darkText,
+  },
+  placeholder: {
+    width: 28,
   },
   scroll: {
     padding: Colors.spacing.md,
@@ -247,5 +300,72 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     width: '100%',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Colors.spacing.lg,
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: Colors.white,
+    borderRadius: Colors.radius.lg,
+    padding: Colors.spacing.lg,
+    alignItems: 'center',
+    ...Colors.shadow.medium,
+  },
+  warningIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Colors.spacing.md,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: Typography.fontWeight.bold,
+    color: '#DC2626',
+    marginBottom: Colors.spacing.xs,
+    textAlign: 'center',
+  },
+  modalSub: {
+    fontSize: 13,
+    color: Colors.grayText,
+    textAlign: 'center',
+    marginBottom: Colors.spacing.md,
+    lineHeight: 18,
+  },
+  reasonBox: {
+    width: '100%',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: Colors.radius.md,
+    padding: Colors.spacing.md,
+    marginBottom: Colors.spacing.lg,
+  },
+  reasonText: {
+    fontSize: 14,
+    color: '#92400E',
+    fontWeight: Typography.fontWeight.medium,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: Colors.primaryBlue,
+    borderRadius: Colors.radius.md,
+    paddingVertical: Colors.spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    fontSize: 14,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.white,
   },
 });

@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AlertCircle } from 'lucide-react-native';
+import { AlertCircle, ArrowLeft } from 'lucide-react-native';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/typography';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -50,9 +50,13 @@ export const DescriptionScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       
-      {}
+      {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <ArrowLeft size={20} color={Colors.darkText} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('describeIssueTitle')}</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <KeyboardAvoidingView
@@ -159,17 +163,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Colors.spacing.md,
     paddingVertical: Colors.spacing.md,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-    alignItems: 'center',
+  },
+  backBtn: {
+    padding: 4,
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.darkText,
+  },
+  placeholder: {
+    width: 28,
   },
   flex: {
     flex: 1,

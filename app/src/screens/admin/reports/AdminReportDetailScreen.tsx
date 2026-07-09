@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ArrowLeft, User, Calendar, MapPin, Plus, CheckSquare } from 'lucide-react-native';
+import { ArrowLeft, User, Calendar, MapPin, CheckSquare } from 'lucide-react-native';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/typography';
 import { getReportById } from '../../../services/reportService';
@@ -29,6 +29,7 @@ import { Report, StatusHistory } from '../../../types/report.types';
 import { CATEGORIES } from '../../../constants/categories';
 import { ReportsStackParamList } from '../../../types/navigation.types';
 import { useSettingsStore } from '../../../context/useSettingsStore';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'ReportDetail'>;
 type ScreenRouteProp = RouteProp<ReportsStackParamList, 'ReportDetail'>;
@@ -39,6 +40,8 @@ export const AdminReportDetailScreen: React.FC = () => {
   const { reportId } = route.params;
 
   const currentAdmin = useAuthStore((s) => s.user);
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
 
   const [report, setReport] = useState<Report | null>(null);
   const [history, setHistory] = useState<StatusHistory[]>([]);
@@ -100,7 +103,10 @@ export const AdminReportDetailScreen: React.FC = () => {
       setHistory(data.history || []);
     } catch (error) {
       console.error('Error fetching admin report details:', error);
-      Alert.alert('Error', 'Failed to load report details.');
+      Alert.alert(
+        t('error' as any) || 'Error',
+        isHindi ? 'रिपोर्ट विवरण लोड करने में विफल।' : 'Failed to load report details.'
+      );
     } finally {
       setLoading(false);
     }
@@ -117,13 +123,18 @@ export const AdminReportDetailScreen: React.FC = () => {
     if (!report || !currentAdmin) return;
     setAssigning(true);
     try {
-
       await updateReportStatus(report.id, report.status, 'Assigned to officer: ' + currentAdmin.name, currentAdmin.id);
-      Alert.alert('Assigned', 'Incident report has been assigned to you.');
+      Alert.alert(
+        isHindi ? 'आवंटित' : 'Assigned',
+        isHindi ? 'यह घटना रिपोर्ट आपको सौंप दी गई है।' : 'Incident report has been assigned to you.'
+      );
       loadReportData();
     } catch (error: any) {
       console.error('Error self-assigning report:', error);
-      Alert.alert('Assignment Failed', error.message || 'An error occurred.');
+      Alert.alert(
+        isHindi ? 'आवंटन विफल' : 'Assignment Failed',
+        error.message || 'An error occurred.'
+      );
     } finally {
       setAssigning(false);
     }
@@ -140,25 +151,30 @@ export const AdminReportDetailScreen: React.FC = () => {
   if (!report) {
     return (
       <SafeAreaView style={styles.centerContainer}>
-        <Text style={styles.errorText}>Report not found.</Text>
+        <Text style={styles.errorText}>
+          {isHindi ? 'रिपोर्ट नहीं मिली।' : 'Report not found.'}
+        </Text>
       </SafeAreaView>
     );
   }
 
   const categoryItem = CATEGORIES.find((c) => c.id === report.category);
+  const categoryLabel = categoryItem
+    ? t(categoryItem.id as any)
+    : report.category;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'submitted':
-        return { bg: '#F3F4F6', text: '#374151', label: 'Submitted' };
+        return { bg: '#F3F4F6', text: '#374151', label: t('statusSubmitted' as any) || 'Submitted' };
       case 'under_review':
-        return { bg: '#FEF3C7', text: '#D97706', label: 'Under Review' };
+        return { bg: '#FEF3C7', text: '#D97706', label: t('statusUnderReview' as any) || 'Under Review' };
       case 'assigned':
-        return { bg: '#DBEAFE', text: '#2563EB', label: 'Assigned' };
+        return { bg: '#DBEAFE', text: '#2563EB', label: t('statusAssigned' as any) || 'Assigned' };
       case 'action_started':
-        return { bg: '#FFEDD5', text: '#EA580C', label: 'Action Started' };
+        return { bg: '#FFEDD5', text: '#EA580C', label: t('statusActionStarted' as any) || 'In Progress' };
       case 'resolved':
-        return { bg: '#D1FAE5', text: '#059669', label: 'Resolved' };
+        return { bg: '#D1FAE5', text: '#059669', label: t('statusResolved' as any) || 'Resolved' };
       default:
         return { bg: '#F3F4F6', text: '#374151', label: status.toUpperCase() };
     }
@@ -192,7 +208,7 @@ export const AdminReportDetailScreen: React.FC = () => {
           <ArrowLeft size={20} color={Colors.darkText} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Review: {categoryItem?.label || report.category}
+          {isHindi ? 'समीक्षा: ' : 'Review: '}{categoryLabel}
         </Text>
         <View style={styles.placeholder} />
       </View>
@@ -216,7 +232,7 @@ export const AdminReportDetailScreen: React.FC = () => {
             <View style={styles.actionsPanel}>
               {!isAssignedToMe ? (
                 <Button
-                  title="Assign to Me"
+                  title={t('assignToMe' as any) || 'Assign to Me'}
                   onPress={handleAssignToMe}
                   loading={assigning}
                   variant="outline"
@@ -224,13 +240,15 @@ export const AdminReportDetailScreen: React.FC = () => {
                 />
               ) : (
                 <View style={styles.ownershipBadge}>
-                  <Text style={styles.ownershipText}>✓ Assigned to You</Text>
+                  <Text style={styles.ownershipText}>
+                    {isHindi ? '✓ आपको आवंटित' : '✓ Assigned to You'}
+                  </Text>
                 </View>
               )}
 
               {report.status === 'action_started' && (
                 <Button
-                  title="Resolve Incident"
+                  title={isHindi ? 'घटना हल करें' : 'Resolve Incident'}
                   onPress={() => navigation.navigate('UploadResolution', { reportId: report.id })}
                   variant="secondary"
                   style={styles.actionBtn}
@@ -249,34 +267,33 @@ export const AdminReportDetailScreen: React.FC = () => {
 
           {report.status === 'resolved' && (
             <View style={styles.resolutionContainer}>
-              <Text style={styles.sectionTitle}>Resolution Details</Text>
+              <Text style={styles.sectionTitle}>
+                {isHindi ? 'समाधान का विवरण' : 'Resolution Details'}
+              </Text>
               <Card style={styles.detailsCard}>
                 <View style={styles.resolutionHeader}>
                   <CheckSquare size={18} color="#059669" />
-                  <Text style={styles.resolutionTitle}>Issue Resolved</Text>
+                  <Text style={styles.resolutionTitle}>
+                    {isHindi ? 'मामला सुलझ गया' : 'Issue Resolved'}
+                  </Text>
                 </View>
 
-                {report.resolutionNotes ? (
-                  <View style={styles.descriptionBlock}>
-                    <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
-                    <Text style={styles.descriptionText}>{report.resolutionNotes}</Text>
-                  </View>
-                ) : (
-                  <View style={styles.descriptionBlock}>
-                    <Text style={styles.descriptionLabel}>Official Resolution Remarks</Text>
-                    <Text style={[styles.descriptionText, { fontStyle: 'italic', color: Colors.grayText }]}>
-                      No resolution notes provided.
-                    </Text>
-                  </View>
-                )}
+                <View style={styles.descriptionBlock}>
+                  <Text style={styles.descriptionLabel}>
+                    {isHindi ? 'आधिकारिक समाधान टिप्पणी' : 'Official Resolution Remarks'}
+                  </Text>
+                  <Text style={styles.descriptionText}>
+                    {report.resolutionNotes || (isHindi ? 'कोई समाधान नोट नहीं दिया गया है।' : 'No resolution notes provided.')}
+                  </Text>
+                </View>
 
                 {resolvedEvent && (
                   <View style={styles.resolverBlock}>
                     <Text style={styles.resolverLabel}>
-                      Resolved by: <Text style={styles.resolverValue}>{resolvedEvent.changedBy.name}</Text>
+                      {isHindi ? 'द्वारा सुलझाया गया: ' : 'Resolved by: '}<Text style={styles.resolverValue}>{resolvedEvent.changedBy.name}</Text>
                     </Text>
                     <Text style={styles.resolverDate}>
-                      Date: {new Date(resolvedEvent.changedAt).toLocaleString()}
+                      {isHindi ? 'दिनांक: ' : 'Date: '}{new Date(resolvedEvent.changedAt).toLocaleString()}
                     </Text>
                   </View>
                 )}
@@ -284,7 +301,9 @@ export const AdminReportDetailScreen: React.FC = () => {
 
               {report.resolutionImage ? (
                 <View style={{ marginTop: Colors.spacing.md }}>
-                  <Text style={styles.sectionTitle}>Resolution Proof Photo</Text>
+                  <Text style={styles.sectionTitle}>
+                    {isHindi ? 'समाधान प्रमाण फोटो' : 'Resolution Proof Photo'}
+                  </Text>
                   <View style={styles.imageContainer}>
                     <Image source={{ uri: report.resolutionImage }} style={styles.mainImage} />
                   </View>
@@ -293,11 +312,13 @@ export const AdminReportDetailScreen: React.FC = () => {
             </View>
           )}
 
-          <Text style={styles.sectionTitle}>Incident Details</Text>
+          <Text style={styles.sectionTitle}>{t('reportDetails' as any) || 'Report Details'}</Text>
           <Card style={styles.detailsCard}>
             <View style={styles.metaRow}>
               <User size={16} color={Colors.grayText} />
-              <Text style={styles.metaText}>Reporter Reference: User_{userDisplayId}</Text>
+              <Text style={styles.metaText}>
+                {isHindi ? `रिपोर्टर संदर्भ: उपयोगकर्ता_${userDisplayId}` : `Reporter Reference: User_${userDisplayId}`}
+              </Text>
             </View>
             <View style={styles.metaRow}>
               <Calendar size={16} color={Colors.grayText} />
@@ -306,25 +327,32 @@ export const AdminReportDetailScreen: React.FC = () => {
             <View style={styles.metaRow}>
               <MapPin size={16} color={Colors.grayText} />
               <Text style={styles.metaText}>
-                GPS Coordinates: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
+                {isHindi ? 'जीपीएस निर्देशांक: ' : 'GPS Coordinates: '}{report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}
               </Text>
             </View>
 
             {report.description ? (
               <View style={styles.descriptionBlock}>
-                <Text style={styles.descriptionLabel}>Citizen Description</Text>
+                <Text style={styles.descriptionLabel}>
+                  {isHindi ? 'नागरिक का विवरण' : 'Citizen Description'}
+                </Text>
                 <Text style={styles.descriptionText}>{report.description}</Text>
               </View>
             ) : null}
           </Card>
 
-          <Text style={styles.sectionTitle}>Incident Location</Text>
+          <Text style={styles.sectionTitle}>
+            {isHindi ? 'घटना का स्थान' : 'Incident Location'}
+          </Text>
           <Card style={styles.detailsCard}>
             <Text style={{ fontSize: 13, color: Colors.darkText, marginBottom: Colors.spacing.sm, lineHeight: 18 }}>
-              This incident was reported at GPS coordinates: <Text style={{ fontWeight: 'bold' }}>{report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}</Text>. You can open this location directly in your device's native maps application for navigation.
+              {isHindi 
+                ? `यह घटना जीपीएस निर्देशांक: ${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)} पर दर्ज की गई थी। आप नेविगेशन के लिए अपने डिवाइस के नक्शे के एप्लिकेशन में सीधे इस स्थान को खोल सकते हैं।`
+                : `This incident was reported at GPS coordinates: ${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)}. You can open this location directly in your device's native maps application for navigation.`
+              }
             </Text>
             <Button
-              title="Open in Google / Apple Maps"
+              title={t('openMap' as any) || 'Open Map'}
               onPress={() => {
                 const url = Platform.select({
                   ios: `maps:0,0?q=${report.latitude},${report.longitude}`,

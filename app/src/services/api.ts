@@ -4,12 +4,12 @@ import { useAuthStore } from '../context/useAuthStore';
 // base api connection config
 
 // e.g., http192.168.1.503000api
-export const API_BASE_URL = 'https://civic-app-3wdi.onrender.com/api';
+export const API_BASE_URL = 'http://10.32.151.12:3000/api';
 export const USE_MOCK = false;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 120000,
 });
 
 api.interceptors.request.use(
@@ -56,14 +56,6 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-
-    console.warn('[API ERROR INTERCEPTOR]', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-    });
 
     // check for offlinenetwork issues
     if (!error.response && error.message === 'Network Error') {

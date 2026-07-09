@@ -4,46 +4,85 @@ import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Report, ReportPriority, ReportStatus } from '../../types/report.types';
 import { CATEGORIES } from '../../constants/categories';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface ReportListItemProps {
   report: Report;
   onPress: () => void;
 }
 
-const getStatusStyles = (status: ReportStatus) => {
+const getStatusLabel = (status: ReportStatus, t: any) => {
   switch (status) {
     case 'submitted':
-      return { label: 'Submitted', color: '#6B7280', bg: '#F3F4F6' };
+      return t('statusSubmitted' as any) || 'Submitted';
     case 'under_review':
-      return { label: 'Under Review', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      return t('statusUnderReview' as any) || 'Under Review';
     case 'assigned':
-      return { label: 'Assigned', color: Colors.primaryBlue, bg: '#EFF6FF' };
+      return t('statusAssigned' as any) || 'Assigned';
     case 'action_started':
-      return { label: 'In Progress', color: Colors.alertOrange, bg: '#FFF7ED' };
+      return t('statusActionStarted' as any) || 'In Progress';
     case 'resolved':
-      return { label: 'Resolved', color: Colors.environmentalGreen, bg: '#F0FDF4' };
+      return t('statusResolved' as any) || 'Resolved';
     default:
-      return { label: status, color: '#6B7280', bg: '#F3F4F6' };
+      return status;
   }
 };
 
-const getPriorityStyles = (priority?: ReportPriority) => {
+const getStatusColors = (status: ReportStatus) => {
+  switch (status) {
+    case 'submitted':
+      return { color: '#6B7280', bg: '#F3F4F6' };
+    case 'under_review':
+    case 'assigned':
+      return { color: Colors.primaryBlue, bg: '#EFF6FF' };
+    case 'action_started':
+      return { color: Colors.alertOrange, bg: '#FFF7ED' };
+    case 'resolved':
+      return { color: Colors.environmentalGreen, bg: '#F0FDF4' };
+    default:
+      return { color: '#6B7280', bg: '#F3F4F6' };
+  }
+};
+
+const getPriorityLabel = (priority: ReportPriority | undefined, isHindi: boolean) => {
   switch (priority) {
     case 'high':
-      return { color: Colors.alertOrange, label: 'High' };
+      return isHindi ? 'उच्च' : 'High';
     case 'medium':
-      return { color: '#F59E0B', label: 'Medium' }; // yellow
+      return isHindi ? 'मध्यम' : 'Medium';
     case 'low':
-      return { color: Colors.environmentalGreen, label: 'Low' };
+      return isHindi ? 'निम्न' : 'Low';
     default:
-      return { color: '#6B7280', label: 'Unassigned' };
+      return isHindi ? 'अनिर्धारित' : 'Unassigned';
+  }
+};
+
+const getPriorityColor = (priority?: ReportPriority) => {
+  switch (priority) {
+    case 'high':
+      return Colors.alertOrange;
+    case 'medium':
+      return '#F59E0B'; // yellow
+    case 'low':
+      return Colors.environmentalGreen;
+    default:
+      return '#6B7280';
   }
 };
 
 export const ReportListItem: React.FC<ReportListItemProps> = ({ report, onPress }) => {
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
+
   const categoryItem = CATEGORIES.find((c) => c.id === report.category);
-  const statusStyles = getStatusStyles(report.status);
-  const priorityStyles = getPriorityStyles(report.priority);
+  const categoryLabel = categoryItem
+    ? t(categoryItem.id as any)
+    : report.category;
+
+  const statusLabel = getStatusLabel(report.status, t);
+  const statusColors = getStatusColors(report.status);
+  const priorityLabel = getPriorityLabel(report.priority, isHindi);
+  const priorityColor = getPriorityColor(report.priority);
 
   const formattedDate = new Date(report.createdAt).toLocaleDateString(undefined, {
     month: 'short',
@@ -59,21 +98,22 @@ export const ReportListItem: React.FC<ReportListItemProps> = ({ report, onPress 
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.category} numberOfLines={1}>
-            {categoryItem ? categoryItem.label : report.category}
+            {categoryLabel}
           </Text>
           <Text style={styles.date}>{formattedDate}</Text>
         </View>
 
-        {}
         <View style={styles.priorityRow}>
-          <View style={[styles.priorityDot, { backgroundColor: priorityStyles.color }]} />
-          <Text style={styles.priorityText}>{priorityStyles.label} Priority</Text>
+          <View style={[styles.priorityDot, { backgroundColor: priorityColor }]} />
+          <Text style={styles.priorityText}>
+            {priorityLabel} {isHindi ? 'प्राथमिकता' : 'Priority'}
+          </Text>
         </View>
 
         <View style={styles.footer}>
-          <View style={[styles.badge, { backgroundColor: statusStyles.bg }]}>
-            <Text style={[styles.badgeText, { color: statusStyles.color }]}>
-              {statusStyles.label}
+          <View style={[styles.badge, { backgroundColor: statusColors.bg }]}>
+            <Text style={[styles.badgeText, { color: statusColors.color }]}>
+              {statusLabel}
             </Text>
           </View>
           {report.assignedDepartment ? (

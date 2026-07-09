@@ -83,6 +83,7 @@ export const createReport = async (formData: FormData): Promise<Report> => {
   const response = await api.post('/reports', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      'X-Client-Version': '2.0.0-AI',
     },
     transformRequest: (data) => data,
   });

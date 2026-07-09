@@ -21,6 +21,7 @@ export const REPORT_STATUSES = [
   'assigned',
   'action_started',
   'resolved',
+  'invalid',
 ] as const;
 
 export type ReportStatus = (typeof REPORT_STATUSES)[number];
@@ -35,6 +36,12 @@ export type ReportPriority = (typeof REPORT_PRIORITIES)[number];
 export interface IAiDetection {
   label: string;
   confidence: number; // 0.0 – 1.0
+}
+
+export interface IAiValidation {
+  isValid: boolean;
+  confidence: number; // 0.0 – 1.0
+  reason: string;
 }
 
 export interface IReport extends Document {
@@ -57,6 +64,7 @@ export interface IReport extends Document {
    * Confidence is a float in [0, 1].
    */
   aiDetection?: IAiDetection;
+  aiValidation?: IAiValidation;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -87,6 +95,11 @@ const ReportSchema = new Schema<IReport>(
     aiDetection: {
       label: { type: String },
       confidence: { type: Number, min: 0, max: 1 },
+    },
+    aiValidation: {
+      isValid: { type: Boolean, default: true },
+      confidence: { type: Number, min: 0, max: 1 },
+      reason: { type: String },
     },
   },
   {

@@ -318,7 +318,7 @@ export const LiveMapScreen: React.FC = () => {
                         categoryFilter === cat.id && styles.categoryChipTextActive,
                       ]}
                     >
-                      {cat.label}
+                      {t(cat.id as any)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -341,7 +341,7 @@ export const LiveMapScreen: React.FC = () => {
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <View style={{ flex: 1 }}>
                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: Colors.darkText }}>
-                              {matchedCat?.label || report.category}
+                              {matchedCat ? t(matchedCat.id as any) : report.category}
                             </Text>
                             <Text style={{ fontSize: 12, color: Colors.grayText, marginTop: 2 }}>
                               GPS: {report.latitude.toFixed(6)}, {report.longitude.toFixed(6)}

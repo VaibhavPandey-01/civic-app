@@ -1,10 +1,12 @@
 import asyncHandler from 'express-async-handler';
 import { Request, Response } from 'express';
-import Report from '../models/Report.model';
+import Report, { ReportStatus } from '../models/Report.model';
 import StatusHistory from '../models/StatusHistory.model';
-import { uploadBufferToCloudinary } from '../services/imageUploadService';
-import { analyzeImage } from '../services/aiService';
+import User from '../models/User.model';
+import { uploadBufferToCloudinary, deleteImageFromCloudinary } from '../services/imageUploadService';
+import { analyzeImage, AiAnalysisResult } from '../services/aiService';
 import { resolveDepartment, derivePriority } from '../services/routingService';
+import { sendPushNotification } from '../services/notificationService';
 import { sendSuccess, sendError } from '../utils/responseHandler';
 import { createReportSchema, paginationQuerySchema } from '../utils/validators';
 import { logger } from '../utils/logger';
@@ -35,18 +37,41 @@ export const createReport = asyncHandler(async (req: Request, res: Response) => 
     'ocean-preventions/reports'
   );
 
-  // 2. AI analysis — best-effort; failure must NOT block report creation
-  let aiDetection: { label: string; confidence: number } | undefined;
-  try {
-    aiDetection = await analyzeImage(imageURL);
-  } catch (err) {
-    // Non-fatal — log and continue without AI data
-    logger.warn('AI analysis failed (non-blocking)', { err });
+  // 2. AI analysis & validation — best-effort; failure must NOT block report creation
+  const clientVersion = req.headers['x-client-version'];
+  const runAiValidation = clientVersion === '2.0.0-AI';
+
+  let aiResult: AiAnalysisResult | undefined;
+
+  if (runAiValidation) {
+    try {
+      aiResult = await analyzeImage(imageURL, category, description || '');
+    } catch (err) {
+      // Non-fatal — log and continue without AI data
+      logger.warn('AI analysis/validation failed (non-blocking)', { err });
+    }
+  } else {
+    logger.info('Skipping AI validation: legacy client detected', { clientVersion });
   }
 
   // 3. Auto-route to department + derive priority
   const assignedDepartment = resolveDepartment(category);
-  const priority = derivePriority(category, aiDetection?.confidence);
+  const priority = derivePriority(category, aiResult?.aiDetection.confidence);
+
+  // If AI flags it as invalid with high confidence, reject the submission!
+  const isInvalid = aiResult && !aiResult.aiValidation.isValid && aiResult.aiValidation.confidence >= 0.70;
+  if (isInvalid) {
+    // Delete the image from Cloudinary since it's rejected
+    await deleteImageFromCloudinary(imageURL);
+
+    const lang = req.body.language || 'en';
+    const reason = lang === 'hi' ? aiResult?.aiValidation.reasonHindi : aiResult?.aiValidation.reason;
+
+    sendError(res, `AI Validation Failed: ${reason}`, 400);
+    return;
+  }
+
+  const status: ReportStatus = 'submitted';
 
   // 4. Persist the report
   const report = await Report.create({
@@ -57,19 +82,41 @@ export const createReport = asyncHandler(async (req: Request, res: Response) => 
     latitude,
     longitude,
     timestamp: new Date(),
-    status: 'submitted',
+    status,
     assignedDepartment,
     priority,
-    ...(aiDetection ? { aiDetection } : {}),
+    ...(aiResult ? {
+      aiDetection: aiResult.aiDetection,
+      aiValidation: aiResult.aiValidation,
+    } : {}),
   });
 
   // 5. Create the initial status history entry
   await StatusHistory.create({
     reportId: report._id,
-    status: 'submitted',
+    status,
     changedBy: userId,
-    remarks: 'Report submitted by citizen',
+    remarks: isInvalid 
+      ? `Report flagged as invalid by AI: ${aiResult?.aiValidation.reason}`
+      : 'Report submitted by citizen',
   });
+
+  // Notify all admins about the new report
+  try {
+    const admins = await User.find({ role: 'admin', fcmToken: { $exists: true, $ne: null } }).select('fcmToken');
+    for (const adminUser of admins) {
+      if (adminUser.fcmToken) {
+        await sendPushNotification(
+          adminUser.fcmToken,
+          'New Incident Reported',
+          `A new ${category.replace('_', ' ')} incident has been reported.`,
+          { reportId: report._id.toString(), type: 'new_report' }
+        );
+      }
+    }
+  } catch (err) {
+    logger.warn('Push notification failed to admins after report creation', { err });
+  }
 
   sendSuccess(res, { report }, 'Report created successfully', 201);
 });

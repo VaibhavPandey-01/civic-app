@@ -93,10 +93,10 @@ export const uploadResolution = async (
     const parts = (formData as any)._parts || [];
     const getPart = (key: string) => parts.find(([k]: any) => k === key)?.[1];
     
-    const resolutionImgObj = getPart('resolutionImage');
+    const resolutionImgObj = getPart('image');
     
     reports[index].status = 'resolved';
-    reports[index].resolutionNotes = getPart('resolutionNotes') || 'Resolved by authority';
+    reports[index].resolutionNotes = getPart('notes') || 'Resolved by authority';
     reports[index].resolutionImage = resolutionImgObj?.uri || reports[index].imageURL;
     reports[index].updatedAt = new Date().toISOString();
 
@@ -107,6 +107,7 @@ export const uploadResolution = async (
   const response = await api.post(`/admin/reports/${id}/resolution`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      'X-Client-Version': '2.0.0-AI',
     },
     transformRequest: (data) => data,
   });

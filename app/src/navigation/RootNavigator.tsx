@@ -1,13 +1,38 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { useAuthStore } from '../context/useAuthStore';
 import { AuthNavigator } from './AuthNavigator';
 import { CitizenNavigator } from './CitizenNavigator';
 import { AdminNavigator } from './AdminNavigator';
 import { Colors } from '../constants/colors';
+import * as Notifications from 'expo-notifications';
+import { registerForPushNotificationsAsync } from '../services/notificationService';
 
 export const RootNavigator = () => {
   const { user, isAuthenticated, isLoading } = useAuthStore();
+
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+
+      registerForPushNotificationsAsync();
+
+      const subscription = Notifications.addNotificationReceivedListener((notification) => {
+        const { title, body } = notification.request.content;
+        Alert.alert(title || 'Alert', body || '');
+      });
+
+      // handle notification clicks
+      const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+        console.log('Notification clicked with data:', data);
+      });
+
+      return () => {
+        subscription.remove();
+        responseSubscription.remove();
+      };
+    }
+  }, [isAuthenticated, user]);
 
   if (isLoading) {
     return (

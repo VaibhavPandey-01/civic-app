@@ -47,4 +47,14 @@ export const env = {
 
   // CORS
   CORS_ORIGIN: required('CORS_ORIGIN', '*'),
+
+  // SMTP Mail Config
+  SMTP_HOST: process.env.SMTP_HOST || '',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  SMTP_FROM: process.env.SMTP_FROM || 'CivicSafe <no-reply@civicsafe.com>',
+
+  // Gemini AI SDK
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
 } as const;

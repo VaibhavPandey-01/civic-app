@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { firebaseAuth, FIREBASE_CONFIG } from '../config/firebaseConfig';
 import { useAuthStore } from '../context/useAuthStore';
@@ -44,6 +45,35 @@ export const registerWithEmail = async (email: string, password: string): Promis
   } catch (err) {
     throw new Error(firebaseErrorMessage(err));
   }
+};
+
+export const sendFirebaseVerificationEmail = async (): Promise<void> => {
+  if (USE_MOCK) {
+    console.log('[MOCK] Sending Firebase verification email');
+    return;
+  }
+  if (firebaseAuth.currentUser) {
+    try {
+      await sendEmailVerification(firebaseAuth.currentUser);
+    } catch (err) {
+      throw new Error(firebaseErrorMessage(err));
+    }
+  }
+};
+
+export const checkEmailVerified = async (): Promise<boolean> => {
+  if (USE_MOCK) {
+    return true;
+  }
+  if (firebaseAuth.currentUser) {
+    try {
+      await firebaseAuth.currentUser.reload();
+      return firebaseAuth.currentUser.emailVerified;
+    } catch (err) {
+      throw new Error(firebaseErrorMessage(err));
+    }
+  }
+  return false;
 };
 
 // 2. login with firebase emailpassword

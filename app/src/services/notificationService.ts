@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import api from './api';
 
 Notifications.setNotificationHandler({
@@ -28,7 +29,8 @@ export const registerForPushNotificationsAsync = async (): Promise<string | null
     }
 
     // retrieve token
-    token = (await Notifications.getDevicePushTokenAsync()).data;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId || '4f808b23-0d53-488b-8a13-97bd5834fe14';
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     console.log('[Push Notification Device Token]:', token);
 
     if (Platform.OS === 'android') {

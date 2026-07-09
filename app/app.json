@@ -38,11 +38,11 @@
     "plugins": [
       "expo-secure-store"
     ],
+    "owner": "vaibhav_pandey_dev",
     "extra": {
       "eas": {
-        "projectId": "11c2906f-9e10-4802-a1ad-05733c12a807"
+        "projectId": "4f808b23-0d53-488b-8a13-97bd5834fe14"
       }
-    },
-    "owner": "vaibhav_pandey_1"
+    }
   }
 }

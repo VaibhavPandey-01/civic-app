@@ -21,24 +21,27 @@ import { ReportListItem } from '../../../components/admin/ReportListItem';
 import { Report, ReportStatus } from '../../../types/report.types';
 import { CATEGORIES } from '../../../constants/categories';
 import { useSettingsStore } from '../../../context/useSettingsStore';
+import { useTranslation } from '../../../hooks/useTranslation';
 
-const STATUS_FILTERS: { id: 'all' | ReportStatus; label: string }[] = [
-  { id: 'all', label: 'All Statuses' },
-  { id: 'submitted', label: 'Submitted' },
-  { id: 'under_review', label: 'Under Review' },
-  { id: 'assigned', label: 'Assigned' },
-  { id: 'action_started', label: 'In Progress' },
-  { id: 'resolved', label: 'Resolved' },
+const STATUS_FILTERS: { id: 'all' | ReportStatus; key: string; defaultLabel: string }[] = [
+  { id: 'all', key: 'statusAll', defaultLabel: 'All Statuses' },
+  { id: 'submitted', key: 'statusSubmitted', defaultLabel: 'Submitted' },
+  { id: 'under_review', key: 'statusUnderReview', defaultLabel: 'Under Review' },
+  { id: 'assigned', key: 'statusAssigned', defaultLabel: 'Assigned' },
+  { id: 'action_started', key: 'statusActionStarted', defaultLabel: 'In Progress' },
+  { id: 'resolved', key: 'statusResolved', defaultLabel: 'Resolved' },
 ];
 
 const DEPT_FILTERS = [
-  { id: 'all', label: 'All Departments' },
-  { id: 'Municipal Sanitation', label: 'Municipal Sanitation' },
-  { id: 'Police/Emergency', label: 'Police/Emergency' },
+  { id: 'all', key: 'deptAll', defaultLabel: 'All Departments' },
+  { id: 'Municipal Sanitation', key: 'deptSanitation', defaultLabel: 'Municipal Sanitation' },
+  { id: 'Police/Emergency', key: 'deptPolice', defaultLabel: 'Police/Emergency' },
 ];
 
 export const ReportListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
 
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,7 +229,7 @@ export const ReportListScreen: React.FC = () => {
   }, [loading]);
 
   const filteredReports = reports.filter((r) => {
-    const categoryName = CATEGORIES.find((c) => c.id === r.category)?.label || r.category;
+    const categoryName = CATEGORIES.find((c) => c.id === r.category) ? t(r.category as any) : r.category;
     const matchesSearch =
       categoryName.toLowerCase().includes(searchText.toLowerCase()) ||
       (r.description && r.description.toLowerCase().includes(searchText.toLowerCase()));
@@ -239,7 +242,7 @@ export const ReportListScreen: React.FC = () => {
 
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: headerY }] }}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>All Reports</Text>
+          <Text style={styles.headerTitle}>{t('tabReports' as any) || 'Reports'}</Text>
         </View>
       </Animated.View>
 
@@ -249,7 +252,7 @@ export const ReportListScreen: React.FC = () => {
             <Search size={18} color={Colors.grayText} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by description or category..."
+              placeholder={t('searchPlaceholder' as any) || "Search by ID, desc, or location..."}
               value={searchText}
               onChangeText={setSearchText}
               placeholderTextColor={Colors.grayText}
@@ -267,7 +270,7 @@ export const ReportListScreen: React.FC = () => {
       <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: filterY }] }}>
         <View style={styles.filtersWrapper}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            <Text style={styles.filterGroupLabel}>Status:</Text>
+            <Text style={styles.filterGroupLabel}>{isHindi ? 'स्थिति:' : 'Status:'}</Text>
             {STATUS_FILTERS.map((item) => {
               const isActive = selectedStatus === item.id;
               return (
@@ -278,7 +281,7 @@ export const ReportListScreen: React.FC = () => {
                   activeOpacity={0.8}
                 >
                   <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                    {item.label}
+                    {t(item.key as any) || item.defaultLabel}
                   </Text>
                 </TouchableOpacity>
               );
@@ -286,7 +289,7 @@ export const ReportListScreen: React.FC = () => {
 
             <View style={styles.filterDivider} />
 
-            <Text style={styles.filterGroupLabel}>Dept:</Text>
+            <Text style={styles.filterGroupLabel}>{isHindi ? 'विभाग:' : 'Dept:'}</Text>
             {DEPT_FILTERS.map((item) => {
               const isActive = selectedDept === item.id;
               return (
@@ -297,7 +300,7 @@ export const ReportListScreen: React.FC = () => {
                   activeOpacity={0.8}
                 >
                   <Text style={[styles.chipText, isActive ? styles.chipTextActive : null]}>
-                    {item.label}
+                    {t(item.key as any) || item.defaultLabel}
                   </Text>
                 </TouchableOpacity>
               );
@@ -314,7 +317,9 @@ export const ReportListScreen: React.FC = () => {
             </View>
           ) : filteredReports.length === 0 ? (
             <View style={styles.center}>
-              <Text style={styles.emptyText}>No reports found matching your parameters.</Text>
+              <Text style={styles.emptyText}>
+                {t('noReportsFound' as any) || 'No reports match your filters.'}
+              </Text>
             </View>
           ) : (
             <FlatList

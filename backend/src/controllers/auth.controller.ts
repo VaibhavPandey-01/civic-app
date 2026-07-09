@@ -4,6 +4,8 @@ import { Request, Response } from 'express';
 import { firebaseAuth } from '../config/firebase';
 import { env } from '../config/env';
 import User from '../models/User.model';
+import OTP from '../models/OTP.model';
+import { sendOTPEmail } from '../services/email.service';
 import { sendSuccess, sendError } from '../utils/responseHandler';
 import { registerSchema, loginSchema } from '../utils/validators';
 import { logger } from '../utils/logger';
@@ -188,5 +190,48 @@ export const updatePushToken = asyncHandler(async (req: Request, res: Response) 
   }
 
   sendSuccess(res, null, 'Push token updated successfully');
+});
+
+export const sendOTP = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    sendError(res, 'A valid email address is required', 400);
+    return;
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+  await OTP.findOneAndUpdate(
+    { email: email.toLowerCase() },
+    { otp, expiresAt },
+    { upsert: true, new: true }
+  );
+
+  await sendOTPEmail(email.toLowerCase(), otp);
+
+  sendSuccess(res, null, 'OTP sent successfully to your email');
+});
+
+export const verifyOTP = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    sendError(res, 'Email and OTP are required', 400);
+    return;
+  }
+
+  const record = await OTP.findOne({
+    email: email.toLowerCase(),
+    otp: otp.toString().trim(),
+  });
+
+  if (!record || record.expiresAt.getTime() < Date.now()) {
+    sendError(res, 'Incorrect or expired OTP. Please request a new one.', 400);
+    return;
+  }
+
+  await OTP.deleteOne({ _id: record._id });
+
+  sendSuccess(res, null, 'Email verified successfully!');
 });
 

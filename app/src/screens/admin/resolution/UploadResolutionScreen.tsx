@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  ActivityIndicator,
   Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +23,7 @@ import { Card } from '../../../components/common/Card';
 import { Input } from '../../../components/common/Input';
 import { Button } from '../../../components/common/Button';
 import { ReportsStackParamList } from '../../../types/navigation.types';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 type NavigationProp = NativeStackNavigationProp<ReportsStackParamList, 'UploadResolution'>;
 type ScreenRouteProp = RouteProp<ReportsStackParamList, 'UploadResolution'>;
@@ -32,6 +32,9 @@ export const UploadResolutionScreen: React.FC = () => {
   const route = useRoute<ScreenRouteProp>();
   const navigation = useNavigation<NavigationProp>();
   const { reportId } = route.params;
+
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
@@ -59,17 +62,21 @@ export const UploadResolutionScreen: React.FC = () => {
   }, []);
 
   const pickFromGallery = async () => {
-
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need access to your photo library to pick images.');
+      Alert.alert(
+        isHindi ? 'अनुमति अस्वीकृत' : 'Permission Denied',
+        isHindi 
+          ? 'इमेज चुनने के लिए हमें आपकी फोटो लाइब्रेरी तक पहुंच चाहिए।' 
+          : 'We need access to your photo library to pick images.'
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.5,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -80,13 +87,18 @@ export const UploadResolutionScreen: React.FC = () => {
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need access to your camera to take photos.');
+      Alert.alert(
+        isHindi ? 'अनुमति अस्वीकृत' : 'Permission Denied',
+        isHindi 
+          ? 'फोटो लेने के लिए हमें आपके कैमरे तक पहुंच चाहिए।' 
+          : 'We need access to your camera to take photos.'
+      );
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.5,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -96,7 +108,18 @@ export const UploadResolutionScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!imageUri) {
-      Alert.alert('Image Required', 'Please capture or select an image showing the resolved incident.');
+      Alert.alert(
+        t('error' as any) || 'Error',
+        t('imageRequiredError' as any) || 'Please take a photo of the resolved cleanup first'
+      );
+      return;
+    }
+
+    if (!notes.trim()) {
+      Alert.alert(
+        t('error' as any) || 'Error',
+        t('notesRequiredError' as any) || 'Please provide resolution notes'
+      );
       return;
     }
 
@@ -114,11 +137,20 @@ export const UploadResolutionScreen: React.FC = () => {
       formData.append('notes', notes.trim());
 
       await uploadResolution(reportId, formData);
-      Alert.alert('Incident Resolved', 'Resolution logs submitted successfully. Citizen has been notified.');
+      Alert.alert(
+        isHindi ? 'मामला सुलझ गया' : 'Incident Resolved',
+        isHindi 
+          ? 'समाधान लॉग सफलतापूर्वक सबमिट हो गए हैं। नागरिक को सूचित कर दिया गया है।' 
+          : 'Resolution logs submitted successfully. Citizen has been notified.'
+      );
       navigation.goBack();
     } catch (error: any) {
       console.error('Error submitting resolution:', error);
-      Alert.alert('Failed', error.message || 'An error occurred while uploading resolution details.');
+      const backendMsg = error?.response?.data?.message || error.message || 'An error occurred while uploading resolution details.';
+      Alert.alert(
+        t('error' as any) || 'Error',
+        backendMsg
+      );
     } finally {
       setSubmitting(false);
     }
@@ -128,12 +160,13 @@ export const UploadResolutionScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
 
-      {}
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
           <X size={20} color={Colors.darkText} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Upload Resolution</Text>
+        <Text style={styles.headerTitle}>
+          {t('uploadResolutionTitle' as any) || 'Upload Resolution'}
+        </Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -143,7 +176,10 @@ export const UploadResolutionScreen: React.FC = () => {
           <Card style={styles.infoCard}>
             <AlertCircle size={16} color={Colors.primaryBlue} />
             <Text style={styles.infoText}>
-              Admins may choose existing photos from the gallery to upload screenshots/reports sent by operational field workers.
+              {isHindi 
+                ? 'एडमिन फील्ड कार्यकर्ताओं द्वारा भेजे गए स्क्रीनशॉट/रिपोर्ट अपलोड करने के लिए गैलरी से मौजूदा फोटो चुन सकते हैं।' 
+                : 'Admins may choose existing photos from the gallery to upload screenshots/reports sent by operational field workers.'
+              }
             </Text>
           </Card>
 
@@ -160,22 +196,26 @@ export const UploadResolutionScreen: React.FC = () => {
                 <View style={[styles.iconCircle, { backgroundColor: Colors.primaryBlue + '15' }]}>
                   <Camera size={24} color={Colors.primaryBlue} />
                 </View>
-                <Text style={styles.pickerOptionLabel}>Take Photo</Text>
+                <Text style={styles.pickerOptionLabel}>
+                  {t('takePhotoBtn' as any) || 'Take Photo'}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.pickerOption} onPress={pickFromGallery} activeOpacity={0.8}>
                 <View style={[styles.iconCircle, { backgroundColor: Colors.environmentalGreen + '15' }]}>
                   <ImageIcon size={24} color={Colors.environmentalGreen} />
                 </View>
-                <Text style={styles.pickerOptionLabel}>Choose from Gallery</Text>
+                <Text style={styles.pickerOptionLabel}>
+                  {isHindi ? 'गैलरी से चुनें' : 'Choose from Gallery'}
+                </Text>
               </TouchableOpacity>
             </View>
           )}
 
           <Card style={styles.notesCard}>
             <Input
-              label="Resolution Notes"
-              placeholder="Describe what action was taken to resolve the issue..."
+              label={t('resolutionNotesLabel' as any) || 'Resolution Notes'}
+              placeholder={t('resolutionNotesPlaceholder' as any) || 'Describe what action was taken to resolve the issue...'}
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -186,7 +226,7 @@ export const UploadResolutionScreen: React.FC = () => {
           </Card>
 
           <Button
-            title="Submit Resolution Logs"
+            title={t('submitResolutionBtn' as any) || 'Submit Resolution'}
             onPress={handleSubmit}
             variant="secondary"
             loading={submitting}

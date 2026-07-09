@@ -8,31 +8,36 @@ interface PhoneInputProps {
   value: string;
   onChangeText: (text: string) => void;
   error?: string;
+  theme?: 'light' | 'dark';
 }
 
-export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChangeText, error }) => {
+export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChangeText, error, theme }) => {
   const hasError = Boolean(error);
+  const isDark = theme === 'dark';
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.label}>Mobile Number</Text>
+      <Text style={[styles.label, isDark && { color: '#D1D5DB' }]}>Mobile Number</Text>
 
-      <View style={[styles.row, hasError && styles.rowError]}>
-        {}
+      <View style={[
+        styles.row,
+        isDark && { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' },
+        hasError && styles.rowError
+      ]}>
         <TouchableOpacity style={styles.countryBadge} activeOpacity={0.7}>
-          <Text style={styles.countryText}>🇮🇳 +91</Text>
+          <Text style={[styles.countryText, isDark && { color: '#ffffff' }]}>🇮🇳 +91</Text>
         </TouchableOpacity>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
 
-        <Phone size={16} color={Colors.grayText} style={styles.icon} />
+        <Phone size={16} color={isDark ? '#60A5FA' : Colors.grayText} style={styles.icon} />
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, isDark && { color: '#ffffff' }]}
           value={value}
           onChangeText={onChangeText}
           placeholder="Enter phone number"
-          placeholderTextColor={Colors.grayText}
+          placeholderTextColor={isDark ? 'rgba(255,255,255,0.4)' : Colors.grayText}
           keyboardType="phone-pad"
           maxLength={10}
           returnKeyType="done"

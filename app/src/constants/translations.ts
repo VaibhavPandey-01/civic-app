@@ -135,7 +135,59 @@ export const TRANSLATIONS = {
     safetyTipTeaser: "Safety is our top priority. For safety incidents, keep at least 100 meters distance and alert authorities.",
     tabHome: "Home",
     tabReports: "My Reports",
-    tabProfile: "Profile"
+    tabProfile: "Profile",
+
+    // admin  status translations
+    tabDashboard: "Dashboard",
+    tabLiveMap: "Live Map",
+    tabReportsAdmin: "Reports",
+    tabAnalytics: "Analytics",
+    deptAll: "All Departments",
+    deptSanitation: "Municipal Sanitation",
+    deptPolice: "Police/Emergency",
+    statusAll: "All Statuses",
+    statusSubmitted: "Submitted",
+    statusUnderReview: "Under Review",
+    statusAssigned: "Assigned",
+    statusActionStarted: "In Progress",
+    statusResolved: "Resolved",
+    analyticsTitle: "Overview Analytics",
+    reportsByStatus: "Reports by Status",
+    reportsByCategory: "Reports by Category",
+    noDataAvailable: "No statistics available.",
+
+    // category translations
+    garbage_dump: "Garbage Dump",
+    plastic_pollution: "Plastic Pollution",
+    waste_accumulation: "Waste Accumulation",
+    water_pollution: "Water Pollution",
+    suspicious_object: "Suspicious Object",
+    emergency_situation: "Emergency Situation",
+
+    // upload resolution screen keys
+    imageRequiredError: "Please take a photo of the resolved cleanup first",
+    notesRequiredError: "Please provide resolution notes",
+    uploadResolutionTitle: "Upload Resolution",
+    takePhotoBtn: "Take Photo",
+    resolutionNotesLabel: "Resolution Notes",
+    resolutionNotesPlaceholder: "Describe what action was taken to resolve the issue...",
+    submitResolutionBtn: "Submit Resolution",
+
+    // status updater keys
+    statusUpdatedSuccess: "Status updated successfully",
+    updateStatus: "Update Status",
+    remarksLabel: "Remarks / Comments",
+    remarksPlaceholder: "Add any notes or context...",
+
+    // admin detail  list keys
+    assignToMe: "Assign to Me",
+    reportDetails: "Report Details",
+    searchPlaceholder: "Search by ID, desc, or location...",
+    noReportsFound: "No reports match your filters.",
+    verifyEmail: "Verify Your Email",
+    aiValidationTitle: "AI Validation Warning",
+    aiValidationSub: "Our civic AI model detected an issue with your submission:",
+    aiValidationButton: "Edit & Correct Report"
   },
   hi: {
     // general  common
@@ -273,6 +325,58 @@ export const TRANSLATIONS = {
     safetyTipTeaser: "सुरक्षा हमारी सर्वोच्च प्राथमिकता है। सुरक्षा घटनाओं के लिए, कम से कम 100 मीटर की दूरी बनाए रखें और अधिकारियों को सतर्क करें।",
     tabHome: "मुख्य पृष्ठ",
     tabReports: "मेरी रिपोर्ट",
-    tabProfile: "प्रोफ़ाइल"
+    tabProfile: "प्रोफ़ाइल",
+
+    // admin  status translations
+    tabDashboard: "डैशबोर्ड",
+    tabLiveMap: "लाइव नक्शा",
+    tabReportsAdmin: "रिपोर्ट्स",
+    tabAnalytics: "विश्लेषण",
+    deptAll: "सभी विभाग",
+    deptSanitation: "नगर निगम स्वच्छता",
+    deptPolice: "पुलिस/आपातकालीन",
+    statusAll: "सभी स्थितियाँ",
+    statusSubmitted: "जमा किया गया",
+    statusUnderReview: "समीक्षा के अधीन",
+    statusAssigned: "आवंटित",
+    statusActionStarted: "प्रगति पर है",
+    statusResolved: "सुलझाया गया",
+    analyticsTitle: "अवलोकन विश्लेषण",
+    reportsByStatus: "स्थिति के अनुसार रिपोर्ट",
+    reportsByCategory: "श्रेणी के अनुसार रिपोर्ट",
+    noDataAvailable: "कोई आँकड़े उपलब्ध नहीं हैं।",
+
+    // category translations
+    garbage_dump: "कचरा डंप",
+    plastic_pollution: "प्लास्टिक प्रदूषण",
+    waste_accumulation: "कचरा संचय",
+    water_pollution: "जल प्रदूषण",
+    suspicious_object: "संदिग्ध वस्तु",
+    emergency_situation: "आपातकालीन स्थिति",
+
+    // upload resolution screen keys
+    imageRequiredError: "कृपया पहले सुलझाए गए काम की फोटो लें",
+    notesRequiredError: "कृपया समाधान नोट प्रदान करें",
+    uploadResolutionTitle: "समाधान अपलोड करें",
+    takePhotoBtn: "फोटो लें",
+    resolutionNotesLabel: "समाधान नोट्स",
+    resolutionNotesPlaceholder: "वर्णन करें कि समस्या को हल करने के लिए क्या कार्रवाई की गई...",
+    submitResolutionBtn: "समाधान सबमिट करें",
+
+    // status updater keys
+    statusUpdatedSuccess: "स्थिति सफलतापूर्वक अपडेट की गई",
+    updateStatus: "स्थिति अपडेट करें",
+    remarksLabel: "टिप्पणी / विचार",
+    remarksPlaceholder: "कोई नोट या संदर्भ जोड़ें...",
+
+    // admin detail  list keys
+    assignToMe: "मुझे आवंटित करें",
+    reportDetails: "रिपोर्ट विवरण",
+    searchPlaceholder: "आईडी, विवरण या स्थान से खोजें...",
+    noReportsFound: "आपके फ़िल्टर से कोई रिपोर्ट मेल नहीं खाती।",
+    verifyEmail: "ईमेल सत्यापित करें",
+    aiValidationTitle: "एआई सत्यापन चेतावनी",
+    aiValidationSub: "हमारे नागरिक एआई मॉडल ने आपकी रिपोर्ट में एक समस्या का पता लगाया है:",
+    aiValidationButton: "विवरण सुधारें"
   }
 };

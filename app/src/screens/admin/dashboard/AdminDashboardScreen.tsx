@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Map, RefreshCw, BarChart2, ShieldAlert, CheckCircle, LogOut, User, X, Globe, Mail, Shield } from 'lucide-react-native';
+import { Map, RefreshCw, BarChart2, ShieldAlert, CheckCircle, LogOut, User, X, Globe, Mail, Shield, Bell, TrendingUp, Clipboard } from 'lucide-react-native';
 import { useAuthStore } from '../../../context/useAuthStore';
 import { useSettingsStore } from '../../../context/useSettingsStore';
 import { logout } from '../../../services/authService';
@@ -26,6 +26,45 @@ import { Report } from '../../../types/report.types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { BlurView } from 'expo-blur';
+
+const getCategoryLabelHi = (categoryId: string) => {
+  switch (categoryId) {
+    case 'garbage_dump':
+      return 'कचरा डंप';
+    case 'plastic_pollution':
+      return 'प्लास्टिक प्रदूषण';
+    case 'waste_accumulation':
+      return 'कचरा संचय';
+    case 'water_pollution':
+      return 'जल प्रदूषण';
+    case 'suspicious_object':
+      return 'संदिग्ध वस्तु';
+    case 'emergency_situation':
+      return 'आपातकालीन स्थिति';
+    default:
+      return categoryId;
+  }
+};
+
+const getRelativeTime = (timestamp: string | number, isHindi: boolean) => {
+  const now = Date.now();
+  const diff = now - new Date(timestamp).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+
+  if (isHindi) {
+    if (mins < 1) return 'अभी-अभी';
+    if (mins < 60) return `${mins} मिनट पहले`;
+    if (hours < 24) return `${hours} घंटे पहले`;
+    return `${days} दिन पहले`;
+  } else {
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+};
 
 type NavigationProp = NativeStackNavigationProp<any>;
 
@@ -44,6 +83,74 @@ export const AdminDashboardScreen: React.FC = () => {
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [profileVisible, setProfileVisible] = useState(false);
+  const [allReports, setAllReports] = useState<Report[]>([]);
+  const [lastSeenTimestamp, setLastSeenTimestamp] = useState<number>(0);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const notificationsAnim = useRef(new Animated.Value(0)).current;
+
+  const isHindi = language === 'hi';
+  const submittedReports = allReports.filter((r) => r.status === 'submitted');
+
+  const notifications = submittedReports.map((report) => {
+    const categoryLabel = isHindi ? getCategoryLabelHi(report.category) : report.category;
+    
+    const title = isHindi ? 'नई रिपोर्ट दर्ज' : 'New Incident Reported';
+    const desc = isHindi 
+      ? `एक नया ${categoryLabel} मामला दर्ज किया गया है। समीक्षा और कार्रवाई की आवश्यकता है।`
+      : `A new report for ${categoryLabel} has been registered. Action required.`;
+      
+    return {
+      id: report.id,
+      title,
+      desc,
+      time: getRelativeTime(report.createdAt, isHindi),
+      icon: 'clipboard',
+      color: Colors.primaryBlue,
+      bgColor: Colors.primaryBlue + '15',
+      updatedAtTime: new Date(report.updatedAt || report.createdAt).getTime(),
+    };
+  });
+
+  const hasUnseenNotifications = submittedReports.some(
+    (report) => new Date(report.updatedAt || report.createdAt).getTime() > lastSeenTimestamp
+  );
+
+  useEffect(() => {
+    if (submittedReports.length > 0 && lastSeenTimestamp === 0) {
+      const latestTime = Math.max(...submittedReports.map(r => new Date(r.updatedAt || r.createdAt).getTime()));
+      setLastSeenTimestamp(latestTime);
+    }
+  }, [allReports]);
+
+  const showNotifications = () => {
+    setNotificationsVisible(true);
+    setLastSeenTimestamp(Date.now());
+    notificationsAnim.setValue(0);
+    Animated.spring(notificationsAnim, {
+      toValue: 1,
+      tension: 65,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const hideNotifications = () => {
+    Animated.timing(notificationsAnim, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(() => {
+      setNotificationsVisible(false);
+    });
+  };
+
+  const handleNotificationPress = (reportId: string) => {
+    hideNotifications();
+    navigation.navigate('Reports', {
+      screen: 'ReportDetail',
+      params: { reportId },
+    });
+  };
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const statsY = useRef(new Animated.Value(20)).current;
@@ -226,7 +333,7 @@ export const AdminDashboardScreen: React.FC = () => {
       setLoading(true);
       const [analyticsData, reportsData] = await Promise.all([
         getAnalytics(),
-        getAllReports({ limit: 5 }),
+        getAllReports({ limit: 50 }),
       ]);
 
       const total = analyticsData.totalReports;
@@ -242,7 +349,10 @@ export const AdminDashboardScreen: React.FC = () => {
         resolved,
         highPriority: highCategoryCount,
       });
-      setRecentReports(reportsData.reports || []);
+      
+      const reportsList = reportsData.reports || [];
+      setAllReports(reportsList);
+      setRecentReports(reportsList.slice(0, 5));
     } catch (error) {
       console.error('Error loading admin dashboard details:', error);
     } finally {
@@ -305,6 +415,10 @@ export const AdminDashboardScreen: React.FC = () => {
             <Text style={styles.adminName}>{t('welcomeOfficer')}{user?.name || 'Officer'}</Text>
           </View>
           <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.notificationBtn} onPress={showNotifications} activeOpacity={0.8}>
+              <Bell size={20} color={Colors.primaryBlue} />
+              {hasUnseenNotifications && <View style={styles.badgeDot} />}
+            </TouchableOpacity>
             <TouchableOpacity style={styles.profileBtn} onPress={showProfile} activeOpacity={0.8}>
               <User size={20} color={Colors.primaryBlue} />
             </TouchableOpacity>
@@ -424,7 +538,9 @@ export const AdminDashboardScreen: React.FC = () => {
               <ActivityIndicator size="small" color={Colors.primaryBlue} style={styles.loader} />
             ) : recentReports.length === 0 ? (
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyText}>No reports require attention right now.</Text>
+                <Text style={styles.emptyText}>
+                  {isHindi ? 'वर्तमान में किसी रिपोर्ट पर ध्यान देने की आवश्यकता नहीं है।' : 'No reports require attention right now.'}
+                </Text>
               </View>
             ) : (
               <View style={styles.reportsList}>
@@ -496,7 +612,7 @@ export const AdminDashboardScreen: React.FC = () => {
               <Text style={styles.profileName}>{user?.name || 'Officer'}</Text>
               <View style={styles.roleBadge}>
                 <Shield size={12} color={Colors.primaryBlue} style={{ marginRight: 4 }} />
-                <Text style={styles.roleBadgeText}>Officer / Admin</Text>
+                <Text style={styles.roleBadgeText}>{isHindi ? 'अधिकारी / एडमिन' : 'Officer / Admin'}</Text>
               </View>
             </View>
 
@@ -540,6 +656,87 @@ export const AdminDashboardScreen: React.FC = () => {
               <LogOut size={16} color={Colors.white} style={{ marginRight: 8 }} />
               <Text style={styles.modalLogoutText}>{t('logOutBtn')}</Text>
             </TouchableOpacity>
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal
+        visible={notificationsVisible}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+        onRequestClose={hideNotifications}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={hideNotifications}
+        >
+          <Animated.View style={[StyleSheet.absoluteFill, { opacity: notificationsAnim }]}>
+            <BlurView
+              style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0, 0, 0, 0.22)' }]}
+              intensity={25}
+              tint="dark"
+              experimentalBlurMethod={"regular" as any}
+            />
+          </Animated.View>
+          <Animated.View
+            style={[
+              styles.modalCard,
+              {
+                opacity: notificationsAnim,
+                transform: [
+                  { scale: notificationsAnim.interpolate({ inputRange: [0, 1], outputRange: [0.93, 1] }) },
+                  { translateY: notificationsAnim.interpolate({ inputRange: [0, 1], outputRange: [25, 0] }) }
+                ]
+              }
+            ]}
+            onStartShouldSetResponder={() => true}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('notifications')}</Text>
+              <TouchableOpacity onPress={hideNotifications}>
+                <X size={20} color={Colors.grayText} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.notificationScroll} showsVerticalScrollIndicator={false}>
+              {notifications.length === 0 ? (
+                <View style={styles.emptyNotificationsContainer}>
+                  <Bell size={40} color={Colors.grayText + '44'} style={{ marginBottom: 10 }} />
+                  <Text style={styles.emptyNotificationsText}>
+                    {isHindi ? 'कोई नई सूचना नहीं' : 'No new notifications'}
+                  </Text>
+                  <Text style={styles.emptyNotificationsSub}>
+                    {isHindi 
+                      ? 'जब नए मामले दर्ज होंगे तो हम आपको सूचित करेंगे।' 
+                      : "We'll alert you when there are new reports filed in your jurisdiction."}
+                  </Text>
+                </View>
+              ) : (
+                notifications.map((item, index) => {
+                  return (
+                    <View key={item.id}>
+                      {index > 0 && <View style={styles.notificationDivider} />}
+                      <TouchableOpacity
+                        style={styles.notificationItem}
+                        onPress={() => handleNotificationPress(item.id)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={[styles.notificationIconContainer, { backgroundColor: item.bgColor }]}>
+                          <Clipboard size={18} color={item.color} />
+                        </View>
+                        <View style={styles.notificationContent}>
+                          <Text style={styles.notificationItemTitle}>{item.title}</Text>
+                          <Text style={styles.notificationItemDesc}>{item.desc}</Text>
+                          <Text style={styles.notificationItemTime}>{item.time}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
           </Animated.View>
         </TouchableOpacity>
       </Modal>
@@ -824,5 +1021,84 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: Typography.fontWeight.bold,
     fontSize: 14,
+  },
+  notificationBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    position: 'relative',
+    ...Colors.shadow.soft,
+  },
+  badgeDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.alertOrange,
+  },
+  notificationScroll: {
+    marginTop: Colors.spacing.xs,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: Colors.spacing.xs,
+  },
+  notificationIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Colors.spacing.md,
+    marginTop: 2,
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationItemTitle: {
+    fontSize: 14,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.darkText,
+    marginBottom: 2,
+  },
+  notificationItemDesc: {
+    fontSize: 12,
+    color: Colors.grayText,
+    lineHeight: 16,
+    marginBottom: 4,
+  },
+  notificationItemTime: {
+    fontSize: 10,
+    color: Colors.grayText + '99',
+  },
+  notificationDivider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginVertical: Colors.spacing.sm,
+  },
+  emptyNotificationsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Colors.spacing.xl,
+  },
+  emptyNotificationsText: {
+    fontSize: 15,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.darkText,
+    marginBottom: 4,
+  },
+  emptyNotificationsSub: {
+    fontSize: 12,
+    color: Colors.grayText,
+    textAlign: 'center',
+    paddingHorizontal: Colors.spacing.lg,
   },
 });
