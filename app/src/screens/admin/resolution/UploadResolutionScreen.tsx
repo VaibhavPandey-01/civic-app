@@ -97,7 +97,7 @@ export const UploadResolutionScreen: React.FC = () => {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.5,
     });
 

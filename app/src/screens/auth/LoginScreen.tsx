@@ -12,12 +12,13 @@ import {
   Animated,
   Dimensions,
   TextInput,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Mail, Key } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { Button } from '../../components/common/Button';
-import { loginWithEmail, loginWithBackend } from '../../services/authService';
+import { loginWithEmail, loginWithBackend, resetPassword } from '../../services/authService';
 import { validateEmail } from '../../utils/validators';
 import { AuthStackParamList } from '../../types/navigation.types';
 import { Colors } from '../../constants/colors';
@@ -28,7 +29,8 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const isHindi = language === 'hi';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitError, setSubmitError] = useState('');
@@ -94,6 +96,35 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     };
     setErrors(next);
     return Object.values(next).every((e) => !e);
+  };
+
+  const handleForgotPassword = async () => {
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setErrors((e) => ({ ...e, email: emailError }));
+      Alert.alert(
+        isHindi ? 'त्रुटि' : 'Error',
+        isHindi ? 'कृपया पासवर्ड रीसेट करने के लिए पहले एक वैध ईमेल पता दर्ज करें।' : 'Please enter a valid email address first to reset your password.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    setSubmitError('');
+    try {
+      await resetPassword(email);
+      Alert.alert(
+        isHindi ? 'ईमेल भेजा गया' : 'Email Sent',
+        isHindi 
+          ? 'पासवर्ड रीसेट लिंक आपके ईमेल पर भेज दिया गया है।' 
+          : 'A password reset link has been sent to your email.'
+      );
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      setSubmitError(error.message || 'Failed to send password reset email.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = async () => {
@@ -187,6 +218,14 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     />
                   </View>
                   {errors.password ? <Text style={styles.errorLabel}>{errors.password}</Text> : null}
+                </View>
+
+                <View style={styles.forgotPasswordContainer}>
+                  <TouchableOpacity onPress={handleForgotPassword} activeOpacity={0.7}>
+                    <Text style={styles.forgotPasswordText}>
+                      {isHindi ? 'पासवर्ड भूल गए?' : 'Forgot Password?'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
                 {submitError ? (
@@ -358,6 +397,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryBlue,
     borderColor: Colors.primaryBlue,
     marginTop: 8,
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  forgotPasswordText: {
+    fontSize: 12,
+    color: '#2563EB',
+    fontWeight: Typography.fontWeight.semibold,
   },
   signupRow: {
     flexDirection: 'row',

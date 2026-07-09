@@ -4,14 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { X, Camera } from 'lucide-react-native';
+import { X, Camera, Zap, ZapOff } from 'lucide-react-native';
 import { Colors } from '../../../constants/colors';
 import { Typography } from '../../../constants/typography';
 import { getCurrentLocation } from '../../../services/locationService';
@@ -38,6 +38,7 @@ export const CameraScreen: React.FC = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [capturing, setCapturing] = useState(false);
+  const [flash, setFlash] = useState<'off' | 'on'>('off');
 
   useEffect(() => {
     if (!permission) {
@@ -110,7 +111,7 @@ export const CameraScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <CameraView style={StyleSheet.absoluteFillObject} ref={cameraRef}>
+      <CameraView style={StyleSheet.absoluteFillObject} ref={cameraRef} flash={flash}>
         <SafeAreaView style={styles.overlay}>
           {}
           <View style={styles.header}>
@@ -118,7 +119,16 @@ export const CameraScreen: React.FC = () => {
               <X size={24} color={Colors.white} />
             </TouchableOpacity>
             <Text style={styles.title}>Align Incident Photo</Text>
-            <View style={styles.placeholder} />
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={() => setFlash(prev => prev === 'off' ? 'on' : 'off')}
+            >
+              {flash === 'on' ? (
+                <Zap size={20} color="#FBBF24" fill="#FBBF24" />
+              ) : (
+                <ZapOff size={20} color={Colors.white} />
+              )}
+            </TouchableOpacity>
           </View>
 
           {}

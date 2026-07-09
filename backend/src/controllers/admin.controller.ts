@@ -157,8 +157,11 @@ export const uploadResolution = asyncHandler(async (req: Request, res: Response)
         sendError(res, `AI Resolution Verification Failed: ${reason}`, 400);
         return;
       }
-    } catch (err) {
-      logger.warn('AI resolution verification failed (non-blocking)', { err });
+    } catch (err: any) {
+      logger.error('AI resolution verification failed with error', { err });
+      await deleteImageFromCloudinary(resolutionImage);
+      sendError(res, `AI Verification Service Error: ${err.message || 'System error during AI validation. Please try again.'}`, 500);
+      return;
     }
   }
 

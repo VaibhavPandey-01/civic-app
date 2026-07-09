@@ -223,12 +223,6 @@ You must return a valid JSON object matching this schema:
     };
   } catch (error) {
     logger.error('Error during Gemini resolution verification:', { error });
-    // Default fallback to true to prevent blocking authorities on API downtime
-    return {
-      isVerified: true,
-      confidence: 0.5,
-      reason: 'Verification bypassed due to system error',
-      reasonHindi: 'सिस्टम त्रुटि के कारण सत्यापन को बायपास किया गया',
-    };
+    throw error;
   }
 };

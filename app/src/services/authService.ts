@@ -1,10 +1,10 @@
 
-
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { firebaseAuth, FIREBASE_CONFIG } from '../config/firebaseConfig';
 import { useAuthStore } from '../context/useAuthStore';
@@ -86,6 +86,18 @@ export const loginWithEmail = async (email: string, password: string): Promise<s
     const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
     const idToken = await credential.user.getIdToken();
     return idToken;
+  } catch (err) {
+    throw new Error(firebaseErrorMessage(err));
+  }
+};
+
+export const resetPassword = async (email: string): Promise<void> => {
+  if (USE_MOCK) {
+    console.log('[MOCK] Sending password reset email to:', email);
+    return;
+  }
+  try {
+    await sendPasswordResetEmail(firebaseAuth, email);
   } catch (err) {
     throw new Error(firebaseErrorMessage(err));
   }
