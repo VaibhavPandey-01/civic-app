@@ -1,19 +1,12 @@
 <div align="center">
 
-# 🏛️ CivicSafe
-### *AI-Powered Civic Issue Reporting & Anti-Cheat Resolution Platform*
+# CivicSafe
+### AI-Powered Civic Issue Reporting & Anti-Cheat Resolution Platform
 
-[![React Native](https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev/)
-[![Expo](https://img.shields.io/badge/Expo-51.0-000000?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Google Gemini AI](https://img.shields.io/badge/Google_Gemini-Vision_AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
-[![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+**Tech Stack:** React Native • Expo • Node.js • Express.js • MongoDB Atlas • Google Gemini AI • Cloudinary
 
 <p align="center">
-  <b>CivicSafe</b> is a full-stack, enterprise-grade mobile & web governance ecosystem that bridges the gap between citizens and municipal authorities. Powered by <b>Google Gemini Multimodal AI</b>, CivicSafe automates incident detection, prevents fake resolution submissions, and tracks municipal maintenance in real-time.
+  <b>CivicSafe</b> is a full-stack mobile & web governance ecosystem that bridges the gap between citizens and municipal authorities. Powered by <b>Google Gemini Multimodal AI</b>, CivicSafe automates incident detection, prevents fake resolution submissions, and tracks municipal maintenance in real-time.
 </p>
 
 [Key Features](#-key-features) • [System Architecture](#-system-architecture) • [Tech Stack](#%EF%B8%8F-tech-stack) • [Installation Guide](#-installation-guide) • [API Documentation](#-api-documentation) • [Environment Reference](#%EF%B8%8F-environment-variables)
