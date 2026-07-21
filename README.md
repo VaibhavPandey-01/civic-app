@@ -278,7 +278,7 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 <div align="center">
 
 ---
-Developed with ❤️ by **[Vaibhav Pandey](https://github.com/VaibhavPandey-01)**
+Developed by **[Vaibhav Pandey](https://github.com/VaibhavPandey-01)**
 
 *Empowering Communities Through Smart AI Governance*
 
