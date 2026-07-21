@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Real-time Camera Capture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#003d9b",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f1f3ff",
+                        "tertiary": "#851800",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "on-background": "#041b3c",
+                        "tertiary-container": "#b02300",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#434654",
+                        "on-primary-container": "#c4d2ff",
+                        "on-secondary-container": "#00734c",
+                        "on-secondary-fixed-variant": "#005235",
+                        "on-surface": "#041b3c",
+                        "surface-container": "#e8edff",
+                        "on-secondary-fixed": "#002113",
+                        "primary-container": "#0052cc",
+                        "background": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdad2",
+                        "surface-container-highest": "#d7e2ff",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#1d3052",
+                        "surface-dim": "#cadaff",
+                        "surface-container-high": "#e0e8ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb4a3",
+                        "primary-fixed": "#dae2ff",
+                        "surface-tint": "#0c56d0",
+                        "inverse-on-surface": "#edf0ff",
+                        "secondary-fixed-dim": "#65dca4",
+                        "inverse-primary": "#b2c5ff",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed": "#001848",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "outline-variant": "#c3c6d6",
+                        "on-primary": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "on-tertiary-container": "#ffc6b9",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#8b1a00",
+                        "on-tertiary-fixed": "#3d0600",
+                        "outline": "#737685",
+                        "error": "#ba1a1a",
+                        "secondary": "#006c47",
+                        "secondary-container": "#82f9be",
+                        "surface-variant": "#d7e2ff",
+                        "secondary-fixed": "#82f9be"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-desktop": "40px",
+                        "container-padding-mobile": "20px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .camera-overlay {
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.8) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden relative font-body-md select-none">
+<!-- Camera Preview Background -->
+<img class="absolute inset-0 w-full h-full object-cover z-0" data-alt="A first-person view of a heavily polluted coastline, focusing on industrial waste and plastic debris washed ashore. The scene is shot with a wide-angle lens, simulating a raw, unfiltered documentary style. The lighting is overcast, creating a stark, high-contrast, serious mood indicative of environmental emergency. The composition emphasizes the urgency of the environmental crisis, aligning with a corporate humanitarian visual tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvLddiJovAgTqUFeM9IQFZyk2cmvV_f5VWmurn6sPxNx6FbHd5xeL7kaBADmFfGG3wsHQ5MkLXHTaTEKgHPIQrWmyOYVhjI9HmaYLbzDfdZ2ZjCi0xbgTDpNuJ2yZ6Miyo5QVw2GIU7EgR5tehhVY6dr6WCVwcYz7ur0KbW9Szz2MvMW7LUMg0t2oVO0m_1sHmXOBZ-jle9_JL-X5xcJlDrt3i-fEFAxezrTCv79Frz61mnsteOvUiNw"/>
+<!-- Overlay Gradient for contrast -->
+<div class="absolute inset-0 w-full h-full camera-overlay z-10 pointer-events-none"></div>
+<!-- UI Canvas -->
+<div class="absolute inset-0 w-full h-full z-20 flex flex-col justify-between pt-safe pb-safe pb-10">
+<!-- Top Controls -->
+<div class="flex items-center justify-between px-container-padding-mobile pt-4 w-full">
+<button class="w-12 h-12 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-white text-[28px]">arrow_back</span>
+</button>
+<div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px]" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span class="font-label-md text-label-md text-white">Location Permission Active</span>
+</div>
+<div class="w-12 h-12"></div> <!-- Spacer for flex-between alignment -->
+</div>
+<!-- Center Reticle / Guides (Optional for pro look) -->
+<div class="flex-grow flex items-center justify-center pointer-events-none opacity-50">
+<div class="w-64 h-64 border-2 border-dashed border-white/50 rounded-lg relative">
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 border-t-2 border-l-2 border-white"></div>
+<div class="absolute top-1/2 left-1/2 transform translate-x-1/2 translate-y-1/2 w-4 h-4 border-b-2 border-r-2 border-white"></div>
+</div>
+</div>
+<!-- Bottom Controls & Info -->
+<div class="px-container-padding-mobile pb-6 w-full flex flex-col items-center gap-8">
+<!-- Info Overlay Box -->
+<div class="w-full max-w-sm bg-black/50 backdrop-blur-md border border-white/10 rounded-lg p-4 shadow-xl">
+<div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-white/70 uppercase tracking-wider mb-1">GPS Coordinates</span>
+<span class="font-headline-md text-headline-md text-white tabular-nums tracking-tight">28.6139° N, 77.2090° E</span>
+</div>
+<span class="material-symbols-outlined text-white/50">my_location</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-white/70 uppercase tracking-wider mb-1">Timestamp</span>
+<span class="font-body-lg text-body-lg text-white font-medium" id="live-time">--:--:--</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<span class="font-label-sm text-label-sm text-error uppercase">Live</span>
+</div>
+</div>
+</div>
+<!-- Capture Button Area -->
+<div class="relative w-full flex justify-center items-center h-24">
+<!-- Large Capture Button -->
+<button class="relative group active:scale-95 transition-transform duration-150 flex items-center justify-center">
+<!-- Outer Ring -->
+<div class="absolute inset-0 w-20 h-20 bg-transparent border-4 border-white rounded-full opacity-80 group-active:opacity-100 transition-opacity"></div>
+<!-- Inner Circle -->
+<div class="w-[68px] h-[68px] bg-white rounded-full flex items-center justify-center shadow-lg group-active:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-primary text-[32px] opacity-0 group-active:opacity-100 transition-opacity duration-150 absolute" style="font-variation-settings: 'FILL' 1;">camera</span>
+</div>
+</button>
+</div>
+<p class="font-label-sm text-label-sm text-white/60 text-center uppercase tracking-widest mt-2">Tap to Capture Evidence</p>
+</div>
+</div>
+<script>
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateString = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            document.getElementById('live-time').textContent = `${dateString} ${timeString}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body></html>

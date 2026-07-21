@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Detailed Report View - Ocean Preventions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#003d9b",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#f1f3ff",
+                      "tertiary": "#851800",
+                      "primary-fixed-dim": "#b2c5ff",
+                      "on-background": "#041b3c",
+                      "tertiary-container": "#b02300",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#434654",
+                      "on-primary-container": "#c4d2ff",
+                      "on-secondary-container": "#00734c",
+                      "on-secondary-fixed-variant": "#005235",
+                      "on-surface": "#041b3c",
+                      "surface-container": "#e8edff",
+                      "on-secondary-fixed": "#002113",
+                      "primary-container": "#0052cc",
+                      "background": "#f9f9ff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#ffdad2",
+                      "surface-container-highest": "#d7e2ff",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#1d3052",
+                      "surface-dim": "#cadaff",
+                      "surface-container-high": "#e0e8ff",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#ffb4a3",
+                      "primary-fixed": "#dae2ff",
+                      "surface-tint": "#0c56d0",
+                      "inverse-on-surface": "#edf0ff",
+                      "secondary-fixed-dim": "#65dca4",
+                      "inverse-primary": "#b2c5ff",
+                      "surface-bright": "#f9f9ff",
+                      "on-primary-fixed": "#001848",
+                      "on-primary-fixed-variant": "#0040a2",
+                      "outline-variant": "#c3c6d6",
+                      "on-primary": "#ffffff",
+                      "surface": "#f9f9ff",
+                      "on-tertiary-container": "#ffc6b9",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#8b1a00",
+                      "on-tertiary-fixed": "#3d0600",
+                      "outline": "#737685",
+                      "error": "#ba1a1a",
+                      "secondary": "#006c47",
+                      "secondary-container": "#82f9be",
+                      "surface-variant": "#d7e2ff",
+                      "secondary-fixed": "#82f9be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-padding-desktop": "40px",
+                      "container-padding-mobile": "20px",
+                      "unit": "8px",
+                      "gutter": "16px",
+                      "stack-sm": "8px",
+                      "stack-md": "16px",
+                      "stack-lg": "32px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant flex items-center justify-between px-container-padding-mobile h-16 z-50">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="arrow_back" data-weight="regular">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">Ocean Preventions</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-high shrink-0">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A small, circular avatar portrait of a modern maritime worker or coastal citizen, wearing practical outdoor gear. Light, natural coastal lighting. Professional, trustworthy, and approachable aesthetic consistent with a humanitarian app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzRuz-Rn6TrKXx33MU24HWvjXJ4Tw0-pcx2gAYzF797HQanX8bPQyBu-ZQP_uA5btNIvukFlwedjF6AJDnxj39a1cZwNM6m0E6deTDKER-bt4It4Sa2okwIAE0qGo2CZRWx96QcCBXFlSTtQkkenUdBU8xtDhUzuC064jUuAc3xG_s7BbQuPkYt32FoMv8fGTihkRj9jbByzWHI2tUuZfPudWpzFsxTJXeLoUc-aNgnSdtPR5XQNbwIw"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-5xl mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-lg mb-24 md:mb-10">
+<!-- Header Section -->
+<div class="mb-stack-lg flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-error-container text-on-error-container font-label-md text-label-md px-3 py-1 rounded-full inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="warning" data-weight="fill">warning</span>
+                        High Priority
+                    </span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Report ID: #OP-8492</span>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Chemical Spill Near Harbor</h2>
+<div class="flex items-center gap-4 text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today" data-weight="regular">calendar_today</span>
+                        Oct 24, 2023
+                    </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="schedule" data-weight="regular">schedule</span>
+                        14:30 PST
+                    </div>
+</div>
+</div>
+<!-- Large Status Badge -->
+<div class="bg-secondary-container text-on-secondary-container px-6 py-3 rounded-xl border border-secondary-fixed shadow-[0_4px_12px_rgba(0,108,71,0.1)] flex items-center gap-3 w-fit shrink-0">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle" data-weight="fill">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider opacity-80">Current Status</span>
+<span class="font-headline-md text-headline-md font-bold">Resolved</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Main Info Card (Left Column Desktop) -->
+<div class="md:col-span-8 flex flex-col gap-gutter">
+<!-- Info Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-5 md:p-6 shadow-[0_4px_12px_rgba(0,61,155,0.05)]">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="info" data-weight="fill">info</span>
+                        Report Details
+                    </h3>
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="bg-surface-container text-on-surface font-label-md text-label-md px-4 py-1.5 rounded-full border border-outline-variant">Pollution</span>
+<span class="bg-surface-container text-on-surface font-label-md text-label-md px-4 py-1.5 rounded-full border border-outline-variant">Hazard</span>
+<span class="bg-surface-container text-on-surface font-label-md text-label-md px-4 py-1.5 rounded-full border border-outline-variant">Industrial</span>
+</div>
+<div class="prose prose-sm md:prose-base text-on-surface-variant font-body-md text-body-md mb-6 max-w-none">
+<p>A significant chemical spill has been reported near the north commercial docks. An unidentified oily substance is spreading rapidly towards the civilian marina area. Strong chemical odor noted. Immediate containment required to prevent wildlife contamination.</p>
+<p>Initial assessment indicates it may be run-off from the nearby industrial sector. Reporter stayed on site for 15 minutes to monitor spread before vacating due to fumes.</p>
+</div>
+<div class="border-t border-outline-variant pt-4 mt-auto">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Reported by: Citizen Reporter (Verified)</span>
+<span>Confidence Score: 94%</span>
+</div>
+</div>
+</section>
+<!-- Resolution Section (Placeholder for After image) -->
+<section class="bg-surface-container-low border border-outline-variant rounded-DEFAULT p-5 md:p-6">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="verified" data-weight="fill">verified</span>
+                        Resolution Evidence
+                    </h3>
+<div class="flex flex-col sm:flex-row gap-4">
+<div class="w-full sm:w-1/2 aspect-video bg-surface-container-highest rounded-lg border border-dashed border-outline-variant flex flex-col items-center justify-center text-on-surface-variant relative overflow-hidden group">
+<!-- After Image -->
+<img alt="Post-cleanup evidence" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A clean, clear ocean harbor scene after a successful cleanup operation. The water is pristine, reflecting a bright blue sky. A specialized eco-response boat is gently departing the area. Soft, hopeful lighting emphasizing environmental restoration and a calm, corporate-humanitarian aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqkPKAYTBP3Y-cFoXtnlenozixeR_TcnMyM1wJs93fuqq90Lhj2v7SR7SUNpBXFSGZmzVzPqolcR_0e-sXjZxFQBzmM84BIW07q6Vf1xuqc0jg16asTWA6m3XN09uyoBrfzbkmVdvr4OqVt5lhcM5EldBx4sV3vRH5et7x1Kqz4GaR4bDXJuvsMvMR3sLj4Mhz7LSJfKXb2Ay8wpvSZ2Ts_uv__MOgUcHZFAluQbcooxkEP7QBftuY-Q"/>
+<!-- Overlay for label readability -->
+<div class="absolute bottom-2 left-2 bg-inverse-surface/80 text-inverse-on-surface px-2 py-1 rounded text-xs font-label-sm backdrop-blur-sm">After Cleanup</div>
+</div>
+<div class="w-full sm:w-1/2 flex flex-col justify-center">
+<h4 class="font-label-md text-label-md font-semibold text-on-surface mb-2">Cleanup Complete</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm mb-4">Hazmat team successfully deployed absorbent booms. Substance identified as industrial solvent. Area thoroughly cleaned and neutralized. No permanent damage to local marine life observed.</p>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule" data-weight="regular">schedule</span>
+                                Resolved at 18:45 PST
+                            </div>
+</div>
+</div>
+</section>
+</div>
+<!-- Media & Location (Right Column Desktop) -->
+<div class="md:col-span-4 flex flex-col gap-gutter">
+<!-- Before Evidence -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-4 shadow-[0_4px_12px_rgba(0,61,155,0.05)]">
+<h3 class="font-label-md text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-error" data-icon="photo_camera" data-weight="regular">photo_camera</span>
+                        Initial Evidence
+                    </h3>
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden relative group">
+<img alt="Initial report evidence" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A photograph showing a concerning chemical spill in an ocean harbor. An oily, iridescent sheen covers the surface of the dark blue water near concrete docks. Gloomy, overcast lighting heightens the sense of environmental urgency. The image feels like a high-quality smartphone photo taken by a concerned citizen. Humanitarian and serious aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIQMRaYcPhXVFDoVXCptp2BsmviLWt_lorYQd9BZiJto8gkwe381ak-t_neCCcYNXBZHdTp87B44PdLjLrA4N8287PWfXftKchqjzcPcj_jlV-GkuzwZkxX6NmnqM2Xm-JvqMC6UC0cWfhY1pLky5o6jLzYU9y3JwCFlvH1Lvc8EePyLBusq6127VF8fRUfm-mPaIZB0qwlh0qq990t5-oOtccm9C2DQGNzl4k7K-T8U4zcnhWHgjftg"/>
+<div class="absolute bottom-2 right-2 bg-error-container/90 text-on-error-container px-2 py-1 rounded text-xs font-label-sm backdrop-blur-sm">Before</div>
+</div>
+</section>
+<!-- Location Map -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-4 shadow-[0_4px_12px_rgba(0,61,155,0.05)]">
+<h3 class="font-label-md text-label-md font-semibold text-on-surface mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="location_on" data-weight="fill">location_on</span>
+                        Location
+                    </h3>
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden relative border border-outline-variant/50">
+<img alt="Map location of incident" class="w-full h-full object-cover" data-alt="A clear, modern digital map interface centered on a coastal harbor area in Seattle. A bright red pinpoint marker indicates a specific location near the docks. The map style is clean, using a light mode color palette with soft blues for water and subtle greys for landmasses, fitting a professional maritime application." data-location="Seattle, WA" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABGGIbVXSaZqM6tE6sRteerNss8mY6vWj687T_jV7ujS7YR0vjETr5RHOuUQ4zKAoAoZKhT7VMfIO_hIAy0Y3l0WbexoiFzZXZLE_VMoMBRq0jFhfxtVIBpzwlfOrlfgYV1h9LLE_Gn3eZvXHK--HgkGQD4-3jOARbBkC-3KXjRAsyjol6dYKlByAm-AUDPFPcdNAtzWNKSMrzkMHe6Y5FnYqYnE17dM5mLCtIR-y-yzfwUBWxm6EDVQ"/>
+<!-- Map Overlay Info -->
+<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-surface to-transparent p-3 pt-8">
+<p class="font-label-md text-label-md font-semibold text-on-surface shadow-sm">North Commercial Docks</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-mono text-xs">47°36'35.0"N 122°20'22.1"W</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Suppressed Nav Shell as per instructions: Sub-page with 'Back' action implies departure from main nav flow. -->
+<script>
+        // Simple script to handle back button interaction
+        document.querySelector('button[aria-label="Go back"]').addEventListener('click', () => {
+            console.log('Navigating back...');
+            // window.history.back();
+        });
+    </script>
+</body></html>

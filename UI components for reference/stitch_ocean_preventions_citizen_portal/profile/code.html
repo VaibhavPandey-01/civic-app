@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Citizen Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#003d9b",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f1f3ff",
+                    "tertiary": "#851800",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "on-background": "#041b3c",
+                    "tertiary-container": "#b02300",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#434654",
+                    "on-primary-container": "#c4d2ff",
+                    "on-secondary-container": "#00734c",
+                    "on-secondary-fixed-variant": "#005235",
+                    "on-surface": "#041b3c",
+                    "surface-container": "#e8edff",
+                    "on-secondary-fixed": "#002113",
+                    "primary-container": "#0052cc",
+                    "background": "#f9f9ff",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#ffdad2",
+                    "surface-container-highest": "#d7e2ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#1d3052",
+                    "surface-dim": "#cadaff",
+                    "surface-container-high": "#e0e8ff",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#ffb4a3",
+                    "primary-fixed": "#dae2ff",
+                    "surface-tint": "#0c56d0",
+                    "inverse-on-surface": "#edf0ff",
+                    "secondary-fixed-dim": "#65dca4",
+                    "inverse-primary": "#b2c5ff",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary-fixed": "#001848",
+                    "on-primary-fixed-variant": "#0040a2",
+                    "outline-variant": "#c3c6d6",
+                    "on-primary": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "on-tertiary-container": "#ffc6b9",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#8b1a00",
+                    "on-tertiary-fixed": "#3d0600",
+                    "outline": "#737685",
+                    "error": "#ba1a1a",
+                    "secondary": "#006c47",
+                    "secondary-container": "#82f9be",
+                    "surface-variant": "#d7e2ff",
+                    "secondary-fixed": "#82f9be"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding-desktop": "40px",
+                    "container-padding-mobile": "20px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md pb-24 md:pb-0">
+<!-- TopAppBar Mobile / Hidden Desktop -->
+<header class="md:hidden w-full top-0 sticky flex items-center justify-between px-container-padding-mobile h-16 bg-surface border-b border-outline-variant z-40">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">Ocean Preventions</h1>
+</div>
+</header>
+<div class="flex flex-1">
+<!-- SideNav Web / Hidden Mobile -->
+<nav class="hidden md:flex bg-surface shadow-xl h-screen w-80 rounded-r-lg flex-col py-6 sticky top-0">
+<div class="px-6 mb-8 flex flex-col items-start">
+<img alt="Citizen profile photo" class="w-16 h-16 rounded-full object-cover mb-4" data-alt="A professional headshot of a marine steward in a clean white studio setting. The person looks approachable and confident, wearing practical outdoor gear suitable for coastal environmental work. The lighting is soft and natural, emphasizing a trustworthy and capable persona. Shot from the chest up." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI9uQ1u8nfDwCqa6KWV9ndsFqIvJLS4wcU7zYVWDCDnexTjvh1FgKuGNJHeBoBMXBnBO9SqFBZQ35zPt2HaklyZdH8egxwIW3AbvTuF-2cn3TaCPWNr73cs1ZO9SRvn4e96YuzhkxPRDAqB9ZhLrlosFINntotrUWVRd8p5KYHaDfKR6L6lljaaAPgXAK39A84kQ-de9G6q2eY4QIonDZBPMRYbp7Wa7c5dd67uADU5QsnWZaPv1TMMQ"/>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Citizen Reporter</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Verified Member</p>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-2 py-1 rounded-full mt-2 inline-block">Marine Steward</span>
+</div>
+<div class="flex flex-col gap-2 px-4">
+<button class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full mx-2 transition-all duration-300 ease-in-out text-left">
+<span class="material-symbols-outlined">emergency_home</span>
+<span class="font-body-md text-body-md">Emergency SOS</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full mx-2 transition-all duration-300 ease-in-out text-left">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Report History</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full mx-2 transition-all duration-300 ease-in-out text-left">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-body-md text-body-md">Safety Guidelines</span>
+</button>
+<button class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low rounded-full mx-2 transition-all duration-300 ease-in-out text-left">
+<span class="material-symbols-outlined">verified</span>
+<span class="font-body-md text-body-md">Verified Status</span>
+</button>
+<!-- Active State Mapping: Profile -> Settings in SideNav for this view -->
+<button class="flex items-center gap-4 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-full mx-2 transition-all duration-300 ease-in-out text-left">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 px-container-padding-mobile md:px-container-padding-desktop py-8 max-w-4xl mx-auto w-full">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-12">
+<div class="relative">
+<img alt="Vaibhav Avatar" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-surface shadow-[0_4px_12px_rgba(0,61,155,0.15)]" data-alt="A high-quality, professional avatar portrait of a coastal community member named Vaibhav. He has a warm, confident expression, positioned against a bright, clear sky background suggesting an outdoor maritime environment. The lighting is sunny and crisp, reflecting a modern, approachable aesthetic suitable for a verified civic platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQxqC3vlbYPrgCaGtHxf8HeNuVV-vcZdCMuPdyricfMaXLDKdg874r_JVDZqymVpLI4IxMXvfvG147lR6tW-Xu8OkwAJlUar5eOVVUN0jQEKSxTwM1KqPIJ1a6jIAMRg8c5sviANYQWm_EJzqG4YCoSfxCXN8ZQrnjxhtRfRABR9j6RwZWT6xZaI1C3ZrRQpij6MpVj8Enmk6J65Eg6EvCojSNc6PEYayPuUhBr3RAAczvXseuUZ6AVA"/>
+<div class="absolute bottom-2 right-2 bg-secondary text-on-secondary rounded-full p-1.5 shadow-md flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="text-center md:text-left flex flex-col justify-center h-full pt-2">
+<h1 class="font-display-lg text-display-lg md:text-[48px] text-on-surface mb-2">Vaibhav</h1>
+<div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                            Verified Citizen
+                        </span>
+</div>
+<div class="flex flex-col gap-2 text-on-surface-variant font-body-md text-body-md">
+<div class="flex items-center justify-center md:justify-start gap-2">
+<span class="material-symbols-outlined text-[20px]">call</span>
+<span>+1 (555) 019-2834</span>
+</div>
+<div class="flex items-center justify-center md:justify-start gap-2">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+<span>vaibhav.c@oceanprevention.org</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-gutter mb-12">
+<div class="bg-surface border border-outline-variant rounded-lg p-6 flex flex-col items-center text-center shadow-[0_4px_12px_rgba(0,61,155,0.1)] transition-transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-primary text-[32px] mb-3" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-headline-lg text-headline-lg md:text-[32px] text-on-surface mb-1">42</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Reports Submitted</span>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-6 flex flex-col items-center text-center shadow-[0_4px_12px_rgba(0,61,155,0.1)] transition-transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-secondary text-[32px] mb-3" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-headline-lg text-headline-lg md:text-[32px] text-on-surface mb-1">38</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Reports Resolved</span>
+</div>
+<div class="col-span-2 md:col-span-1 bg-surface border border-outline-variant rounded-lg p-6 flex flex-col items-center text-center shadow-[0_4px_12px_rgba(0,61,155,0.1)] transition-transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-tertiary text-[32px] mb-3" style="font-variation-settings: 'FILL' 1;">forum</span>
+<span class="font-headline-lg text-headline-lg md:text-[32px] text-on-surface mb-1">15</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Feedback Given</span>
+</div>
+</section>
+<!-- Settings List -->
+<section class="bg-surface rounded-lg border border-outline-variant overflow-hidden shadow-[0_4px_12px_rgba(0,61,155,0.1)] mb-8">
+<h3 class="font-headline-md text-headline-md px-6 py-4 bg-surface-container-low text-on-surface border-b border-outline-variant">Account Settings</h3>
+<div class="flex flex-col">
+<button class="flex items-center justify-between p-6 hover:bg-surface-container-highest transition-colors border-b border-outline-variant text-left w-full group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">notifications</span>
+<span class="font-body-lg text-body-lg text-on-surface">Notification Settings</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="flex items-center justify-between p-6 hover:bg-surface-container-highest transition-colors border-b border-outline-variant text-left w-full group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">lock</span>
+<span class="font-body-lg text-body-lg text-on-surface">Privacy &amp; Security</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="flex items-center justify-between p-6 hover:bg-surface-container-highest transition-colors border-b border-outline-variant text-left w-full group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">help</span>
+<span class="font-body-lg text-body-lg text-on-surface">Help &amp; Support</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<button class="flex items-center justify-between p-6 hover:bg-error-container transition-colors text-left w-full group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-error">logout</span>
+<span class="font-body-lg text-body-lg text-error font-medium">Logout</span>
+</div>
+</button>
+</div>
+</section>
+</main>
+</div>
+<!-- BottomNavBar Mobile / Hidden Desktop -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface shadow-[0_-4px_12px_rgba(0,61,155,0.1)] flex justify-around items-center h-20 px-4 pb-safe">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all scale-95 active:scale-90 duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all scale-95 active:scale-90 duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">assignment</span>
+<span class="font-label-sm text-label-sm mt-1">Reports</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all scale-95 active:scale-90 duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">notifications</span>
+<span class="font-label-sm text-label-sm mt-1">Alerts</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl px-4 py-1 scale-95 active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm mt-1 font-bold">Profile</span>
+</button>
+</nav>
+</body></html>
